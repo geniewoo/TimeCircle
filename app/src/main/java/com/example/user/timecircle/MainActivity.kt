@@ -3,10 +3,7 @@ package com.example.user.timecircle
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import org.jetbrains.anko.AnkoComponent
-import org.jetbrains.anko.AnkoContext
-import org.jetbrains.anko.frameLayout
-import org.jetbrains.anko.setContentView
+import org.jetbrains.anko.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,9 +13,10 @@ class MainActivity : AppCompatActivity() {
         mainActivityView.setContentView(this)
 
         supportFragmentManager.beginTransaction().apply {
-            val timeCircleFragment = TimeCircleFragment()
-            add(mainActivityView.viewId, timeCircleFragment)
-            commit()
+            TimeCircleFragment().apply {
+                add(mainActivityView.viewId, this)
+                commit()
+            }
         }
     }
 }
@@ -28,6 +26,7 @@ class MainActivityView : AnkoComponent<MainActivity> {
     override fun createView(ui: AnkoContext<MainActivity>): View {
         return ui.apply {
             frameLayout {
+                lparams(matchParent, matchParent)
                 id = viewId
             }
         }.view
