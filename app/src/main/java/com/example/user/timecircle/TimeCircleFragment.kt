@@ -1,5 +1,7 @@
 package com.example.user.timecircle
 
+import android.graphics.Color
+import android.graphics.Color.GREEN
 import android.graphics.Point
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -18,8 +20,8 @@ class TimeCircleFragment : Fragment() {
     lateinit var circleLayout: FrameLayout
     var centerX: Int = 0
     var centerY: Int = 0
+    val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         val ui = UI {
             verticalLayout {
                 circleLayout = frameLayout {
@@ -33,10 +35,11 @@ class TimeCircleFragment : Fragment() {
                 }.lparams(dimen(R.dimen.timeCircle_Length), dimen(R.dimen.timeCircle_Length)) {
                     gravity = Gravity.CENTER
                 }
-                for (i in 0 until CIRCLE_NUM - 1) {
-                    val circleView = CircleView(context, i.toFloat())
+                for (i in 0 until CIRCLE_NUM - 4) {
+                    val circleView = CircleView(context, i)
                     circleView.z = 1.0f
                     circleLayout.addView(circleView)
+                    circleViews[i] = circleView
                 }
                 var title = editText {
                     hint = "test!!!!"
@@ -54,14 +57,19 @@ class TimeCircleFragment : Fragment() {
         centerY = dimen(R.dimen.timeCircle_Length) / 2
     }
 
-    private val onTouchListener: View.OnTouchListener = View.OnTouchListener { view: View?, motionEvent: MotionEvent? ->
-        val x = centerX - motionEvent!!.x
-        val y = centerY - motionEvent!!.y
+    private val onTouchListener: View.OnTouchListener = View.OnTouchListener { view: View?, motionEvent: MotionEvent ->
+        val x = centerX - motionEvent.x
+        val y = centerY - motionEvent.y
 
         val length = double(x) + double(y)
         if (length < double(dimen(R.dimen.timeCircle_Length) / 2) && length > double(dimen(R.dimen.timeImage_Length) / 2)) {
             i("coco ", "atan : " + (atan2(x, y) * (180 / Math.PI)).toString())
-            i("coconum", (((atan2(x, y) * (180 / Math.PI) + 450) % 360) / UNIT_ANGLE).toInt().toString())
+            val circleIndex = (((atan2(x, y) * (180 / Math.PI) + 450) % 360) / -UNIT_ANGLE).toInt()
+            i("coconum", circleIndex.toString())
+            circleViews[circleIndex]?.apply {
+                mColor = Color.GREEN
+                invalidate()
+            }
         }
         true
     }
