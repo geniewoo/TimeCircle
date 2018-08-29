@@ -16,11 +16,14 @@ var Num = 0
 
 class CircleView(context: Context?, private val startIndex: Int) : View(context) {
     var mColor = Color.BLUE
+    private val circleStartPos = 2.0f
+    private val circleSize = dimen(R.dimen.timeCircle_Length).toFloat() - circleStartPos
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         val paint = Paint()
         paint.color = mColor
-        canvas?.drawArc(0.0f, 0.0f, dimen(R.dimen.timeCircle_Length).toFloat(), dimen(R.dimen.timeCircle_Length).toFloat(), UNIT_ANGLE * startIndex, UNIT_ANGLE, true, paint)
+        paint.isAntiAlias = true
+        canvas?.drawArc(circleStartPos, circleStartPos, circleSize, circleSize, UNIT_ANGLE * startIndex, UNIT_ANGLE, true, paint)
     }
 }
