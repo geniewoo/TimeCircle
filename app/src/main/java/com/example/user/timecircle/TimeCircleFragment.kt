@@ -4,14 +4,9 @@ import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.transition.Scene
-import android.transition.TransitionManager
-import android.util.Log.i
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
-import android.widget.LinearLayout
+import android.widget.ImageView
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.UI
@@ -27,17 +22,20 @@ class TimeCircleFragment : Fragment() {
     private val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
     private val scale1 = 1.0f
     private val scale2 = 4.0f
+    private val CIRCLE_IMAGE_SCALE1 = 1.0f
+    private val CIRCLE_IMAGE_SCALE2 = 1.6f
     private val position1 = 0.0f
-    private val position2 = -1000.0f
+    private val position2 = -1500.0f
     private val duration: Long = 500
     private lateinit var circleFrameLayout: FrameLayout
+    private lateinit var circleImageView: ImageView
     var animated = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val ui = UI {
             val rootLayout = verticalLayout {
                 circleFrameLayout = frameLayout {
-                    imageView {
+                    circleImageView = imageView {
                         imageResource = R.drawable.circle_image
                         z = 2.0f
                     }.lparams (wrapContent, wrapContent) {
@@ -70,9 +68,11 @@ class TimeCircleFragment : Fragment() {
     private fun translation(view: View) {
         if (animated) {
             circleFrameLayout.animate().scaleX(scale1).scaleY(scale1).y(position1).setDuration(duration).start()
+            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE1).scaleY(CIRCLE_IMAGE_SCALE1).setDuration(duration).start()
             animated = false
         } else {
             circleFrameLayout.animate().scaleX(scale2).scaleY(scale2).y(position2).setDuration(duration).start()
+            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE2).scaleY(CIRCLE_IMAGE_SCALE2).setDuration(duration).start()
             animated = true
         }
     }
@@ -91,7 +91,7 @@ class TimeCircleFragment : Fragment() {
         if (length < double(dimen(R.dimen.timeCircle_Length) / 2) && length > double(dimen(R.dimen.timeImage_Length) / 2)) {
             val circleIndex = (((atan2(x, y) * (180 / Math.PI) + 450) % 360) / -UNIT_ANGLE).toInt()
             circleViews[circleIndex]?.apply {
-                mColor = Color.GREEN
+                blueColor = Color.GREEN
                 invalidate()
             }
         }
