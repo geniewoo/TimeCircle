@@ -2,4 +2,5 @@
 <resources>
 	<dimen name="timeCircle_Length">300dp</dimen>
 	<dimen name="timeImage_Length">140dp</dimen>
+	<dimen name="timeImage_Length_big">200dp</dimen>
 </resources>
