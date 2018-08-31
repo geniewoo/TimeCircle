@@ -42,3 +42,8 @@ dependencies {
     // optional - Test helpers
     androidTestImplementation "android.arch.navigation:navigation-testing:$nav_version" // use -ktx for Kotlin
 }
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}

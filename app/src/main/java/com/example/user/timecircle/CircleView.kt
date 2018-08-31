@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log.i
 import android.view.View
 import org.jetbrains.anko.dimen
 
@@ -17,7 +16,7 @@ const val CIRCLE_NUM = 144
 const val UNIT_ANGLE = 360.0f / CIRCLE_NUM
 const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INTERVAL) / 6
 
-class CircleView(context: Context?, private val startIndex: Int) : View(context) {
+class CircleView(context: Context?) : View(context) {
     var color = Color.BLUE
     private val circleStartPos = 2.0f
     private val circleSize = dimen(R.dimen.timeCircle_Length).toFloat() - circleStartPos
@@ -41,8 +40,6 @@ class CircleView(context: Context?, private val startIndex: Int) : View(context)
     }
 
     private fun drawOnCanvas(canvas: Canvas?) {
-        i("coco ", "initStartAngle : " + initStartAngle.toString())
-        i("coco ", "intervalCounter : " + intervalCounter.toString())
         if (!initialized) {
             startAngle = initStartAngle
             initStartAngle += if (++intervalCounter % 6 == 0) {
