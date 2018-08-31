@@ -13,10 +13,9 @@ class MainActivity : AppCompatActivity() {
         mainActivityView.setContentView(this)
 
         supportFragmentManager.beginTransaction().apply {
-            TimeCircleFragment().apply {
-                add(mainActivityView.viewId, this)
-                commit()
-            }
+            add(mainActivityView.viewId, TimeCircleFragment())
+            commit()
+
         }
     }
 }
