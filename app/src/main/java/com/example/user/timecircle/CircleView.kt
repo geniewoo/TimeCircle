@@ -10,11 +10,11 @@ import org.jetbrains.anko.dimen
 /**
  * Created by SungWoo on 2018-08-20.
  */
-const val MINUTE_INTERVAL = 0.3f
-const val HOUR_INTERVAL = 0.6f
+private const val MINUTE_INTERVAL = 0.3f
+private const val HOUR_INTERVAL = 0.6f
 const val CIRCLE_NUM = 144
 const val UNIT_ANGLE = 360.0f / CIRCLE_NUM
-const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INTERVAL) / 6
+private const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INTERVAL) / 6
 
 class CircleView(context: Context?) : View(context) {
     var color = Color.BLUE

@@ -27,6 +27,9 @@ private const val CIRCLE_IMAGE_SCALE2 = 1.6f
 private const val position1 = 0.0f
 private const val position2 = -1500.0f
 private const val duration: Long = 500
+private const val rotateBaseRightUnit = -4
+private const val rotateBaseLeftUnit = 3
+private const val MAX_ROTATE_INDEX = 3
 
 class TimeCircleFragment : Fragment() {
     private val centerX by lazy { dimen(R.dimen.timeCircle_Length) / 2 }
@@ -37,6 +40,7 @@ class TimeCircleFragment : Fragment() {
     private var isSelectionMode = false
     private var rotateAngle = INIT_ROTATION_ANGLE
     private var isZoomed = false
+    private var rotateBaseIndex = CIRCLE_NUM / 2
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val ui = UI {
@@ -82,11 +86,16 @@ class TimeCircleFragment : Fragment() {
 
     private fun zoomOut() {
         if (isZoomed) {
-            rotateAngle = INIT_ROTATION_ANGLE
+            initValues()
             circleFrameLayout.animate().scaleX(SCALE1).scaleY(SCALE1).y(position1).setDuration(duration).rotation(rotateAngle).start()
             circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE1).scaleY(CIRCLE_IMAGE_SCALE1).setDuration(duration).start()
             isZoomed = false
         }
+    }
+
+    private fun initValues() {
+        rotateAngle = INIT_ROTATION_ANGLE
+        rotateBaseIndex = CIRCLE_NUM / 2
     }
 
     private fun changeToSelectionMode() {
@@ -115,7 +124,7 @@ class TimeCircleFragment : Fragment() {
         val length = square(x) + square(y)
 
         if (isTouchedInCircle(length)) {
-            changeColor(x, y)
+            changeColorAndRotate(x, y)
         }
         return true
     }
@@ -124,12 +133,52 @@ class TimeCircleFragment : Fragment() {
         return length < square(dimen(R.dimen.timeCircle_Length) / 2) && length > square(dimen(R.dimen.timeImage_Length) / 2)
     }
 
-    private fun changeColor(x: Float, y: Float) {
-        val circleIndex = (((-atan2(x, y) * (180 / Math.PI) + 360) % 360) / UNIT_ANGLE).toInt()
-        circleViews[circleIndex]?.apply {
+    private fun changeColorAndRotate(x: Float, y: Float) {
+        val touchedIndex = getCircleIndex(x, y)
+        circleViews[touchedIndex]?.apply {
             color = Color.GREEN
             invalidate()
         }
+
+        i("coco", "rotatebseindex $rotateBaseIndex circleindex $touchedIndex")
+        var rotateIndex = calculateRotateIndex(touchedIndex)
+        if (rotateIndex == 0) return
+
+        i("COCO", "rotationIndex $rotateIndex")
+        rotateIndex = when {
+            rotateIndex > MAX_ROTATE_INDEX -> MAX_ROTATE_INDEX
+            rotateIndex < -MAX_ROTATE_INDEX -> -MAX_ROTATE_INDEX
+            else -> rotateIndex
+        }
+        rotateBaseIndex += rotateIndex
+        if (rotateBaseIndex > CIRCLE_NUM - 1) rotateBaseIndex -= CIRCLE_NUM
+        else if (rotateBaseIndex < 0) rotateBaseIndex += CIRCLE_NUM
+        rotateAngle += rotateIndex * UNIT_ANGLE
+        circleFrameLayout.animate().rotation(-rotateAngle).setDuration(300).start()
+    }
+
+    private fun calculateRotateIndex(touchedIndex: Int): Int {
+        return when {
+            touchedIndex < CIRCLE_NUM / 4 && CIRCLE_NUM * 3 / 4 < rotateBaseIndex ->
+                if (CIRCLE_NUM + touchedIndex - rotateBaseIndex > rotateBaseLeftUnit) {
+                    CIRCLE_NUM + touchedIndex - rotateBaseIndex - rotateBaseLeftUnit
+                } else {
+                    0
+                }
+            rotateBaseIndex < CIRCLE_NUM / 4 && CIRCLE_NUM * 3 / 4 < touchedIndex ->
+                if (-CIRCLE_NUM + touchedIndex - rotateBaseIndex < rotateBaseRightUnit) {
+                    -CIRCLE_NUM + touchedIndex - rotateBaseIndex - rotateBaseRightUnit
+                } else {
+                    0
+                }
+            touchedIndex - rotateBaseIndex > rotateBaseLeftUnit -> touchedIndex - rotateBaseIndex - rotateBaseLeftUnit
+            touchedIndex - rotateBaseIndex < rotateBaseRightUnit -> touchedIndex - rotateBaseIndex - rotateBaseRightUnit
+            else -> 0
+        }
+    }
+
+    private fun getCircleIndex(x: Float, y: Float): Int {
+        return (((-atan2(x, y) * (180 / Math.PI) + 360) % 360) / UNIT_ANGLE).toInt()
     }
 
     private fun square(mono: Float): Float = mono * mono
