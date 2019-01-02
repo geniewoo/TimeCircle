@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().apply {
             add(mainActivityView.viewId, TimeCircleFragment())
             commit()
-
         }
     }
 }
@@ -23,11 +22,11 @@ class MainActivity : AppCompatActivity() {
 class MainActivityView : AnkoComponent<MainActivity> {
     val viewId = View.generateViewId()
     override fun createView(ui: AnkoContext<MainActivity>): View {
-        return ui.apply {
+        return with(ui) {
             frameLayout {
                 lparams(matchParent, matchParent)
                 id = viewId
             }
-        }.view
+        }
     }
 }

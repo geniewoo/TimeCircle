@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.Log.i
 import android.view.*
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.ImageView
 import org.jetbrains.anko.*
@@ -46,30 +47,34 @@ class TimeCircleFragment : Fragment() {
         val ui = UI {
             verticalLayout {
                 onClick { zoomOut() }
-                circleFrameLayout = frameLayout {
-                    onClick { zoomIn() }
-                    onTouch { _, event -> onTimeCircleTouched(event) }
-                    onLongClick { changeToSelectionMode() }
-                    circleImageView = imageView {
-                        imageResource = R.drawable.circle_image
-                        z = 2.0f
-                    }.lparams(wrapContent, wrapContent) {
-                        gravity = Gravity.CENTER
+                frameLayout {
+                    circleFrameLayout = frameLayout {
+                        onClick { zoomIn() }
+                        onTouch { _, event -> onTimeCircleTouched(event) }
+                        onLongClick { changeToSelectionMode() }
+                        circleImageView = imageView {
+                            imageResource = R.drawable.circle_image
+                            z = 2.0f
+                        }.lparams(wrapContent, wrapContent) {
+                            gravity = Gravity.CENTER
+                        }
+                        imageView {
+                            imageResource = R.drawable.circle_stroke_image
+                            z = 2.0f
+                        }.lparams(wrapContent, wrapContent) {
+                            gravity = Gravity.CENTER
+                        }
+                    }.lparams(dimen(R.dimen.timeCircle_Length), dimen(R.dimen.timeCircle_Length)) {
+                        gravity = Gravity.CENTER_HORIZONTAL
                     }
-                    imageView {
-                        imageResource = R.drawable.circle_stroke_image
-                        z = 2.0f
-                    }.lparams(wrapContent, wrapContent) {
-                        gravity = Gravity.CENTER
+                    for (i in 0 until CIRCLE_NUM) {
+                        val circleView = CircleView(context)
+                        circleView.z = 1.0f
+                        circleFrameLayout.addView(circleView)
+                        circleViews[i] = circleView
                     }
-                }.lparams(dimen(R.dimen.timeCircle_Length), dimen(R.dimen.timeCircle_Length)) {
-                    gravity = Gravity.CENTER
-                }
-                for (i in 0 until CIRCLE_NUM) {
-                    val circleView = CircleView(context)
-                    circleView.z = 1.0f
-                    circleFrameLayout.addView(circleView)
-                    circleViews[i] = circleView
+                }.lparams(MATCH_PARENT, dimen(R.dimen.timeCircle_Length)) {
+                    gravity = Gravity.CENTER_HORIZONTAL
                 }
             }
         }
