@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         mainActivityView.setContentView(this)
 
         supportFragmentManager.beginTransaction().apply {
-            add(mainActivityView.viewId, TimeCircleFragment())
+            replace(mainActivityView.viewId, TimeCircleFragment())
             commit()
         }
     }
