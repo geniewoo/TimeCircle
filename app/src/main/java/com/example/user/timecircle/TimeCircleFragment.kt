@@ -4,16 +4,14 @@ import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.Log.i
-import android.view.*
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.FrameLayout
-import android.widget.ImageView
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import kotlinx.android.synthetic.main.time_circle_fragment.*
-import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.sdk25.coroutines.onLongClick
 import org.jetbrains.anko.sdk25.coroutines.onTouch
-import org.jetbrains.anko.support.v4.UI
 import org.jetbrains.anko.support.v4.dimen
 import kotlin.math.atan2
 
@@ -23,11 +21,11 @@ import kotlin.math.atan2
 
 private const val INIT_ROTATION_ANGLE = 0.0f
 private const val SCALE1 = 1.0f
-private const val scale2 = 4.0f
+private const val SCALE2 = 2.0f
 private const val CIRCLE_IMAGE_SCALE1 = 1.0f
 private const val CIRCLE_IMAGE_SCALE2 = 1.6f
 private const val position1 = 0.0f
-private const val position2 = -1500.0f
+private const val position2 = 500.0f
 private const val duration: Long = 500
 private const val rotateBaseRightUnit = -4
 private const val rotateBaseLeftUnit = 3
@@ -36,6 +34,7 @@ private const val MAX_ROTATE_INDEX = 3
 class TimeCircleFragment : Fragment() {
     private val centerX by lazy { dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { dimen(R.dimen.time_circle_length) / 2 }
+    private var x = 0f
     private val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
     private var isSelectionMode = false
     private var rotateAngle = INIT_ROTATION_ANGLE
@@ -52,6 +51,7 @@ class TimeCircleFragment : Fragment() {
         time_circle_frame_layout.onClick { zoomIn() }
         time_circle_frame_layout.onTouch { _, event -> onTimeCircleTouched(event) }
         time_circle_frame_layout.onLongClick { changeToSelectionMode() }
+
         for (i in 0 until CIRCLE_NUM) {
             val circleView = CircleView(context)
             circleView.z = 1.0f
@@ -62,7 +62,8 @@ class TimeCircleFragment : Fragment() {
 
     private fun zoomIn() {
         if (!isZoomed) {
-            time_circle_frame_layout.animate().scaleX(scale2).scaleY(scale2).y(position2).setDuration(duration).start()
+            x = time_circle_frame_layout.x
+            time_circle_frame_layout.animate().scaleX(SCALE2).scaleY(SCALE2).x(-540f).y(position2).setDuration(duration).start()
 //            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE2).scaleY(CIRCLE_IMAGE_SCALE2).setDuration(duration).start()
             isZoomed = true
         }
@@ -71,7 +72,7 @@ class TimeCircleFragment : Fragment() {
     private fun zoomOut() {
         if (isZoomed) {
             initValues()
-            time_circle_frame_layout.animate().scaleX(SCALE1).scaleY(SCALE1).y(position1).setDuration(duration).rotation(rotateAngle).start()
+            time_circle_frame_layout.animate().scaleX(SCALE1).scaleY(SCALE1).x(x).y(position1).setDuration(duration).rotation(rotateAngle).start()
 //            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE1).scaleY(CIRCLE_IMAGE_SCALE1).setDuration(duration).start()
             isZoomed = false
         }
