@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-	<dimen name="timeCircle_Length">300dp</dimen>
-	<dimen name="timeImage_Length">140dp</dimen>
-	<dimen name="timeImage_Length_big">200dp</dimen>
+	<dimen name="time_circle_length">300dp</dimen>
+	<dimen name="time_image_length">140dp</dimen>
 </resources>

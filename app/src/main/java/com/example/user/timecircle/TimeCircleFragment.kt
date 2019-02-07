@@ -8,6 +8,7 @@ import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.ImageView
+import kotlinx.android.synthetic.main.time_circle_fragment.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.sdk25.coroutines.onLongClick
@@ -33,58 +34,36 @@ private const val rotateBaseLeftUnit = 3
 private const val MAX_ROTATE_INDEX = 3
 
 class TimeCircleFragment : Fragment() {
-    private val centerX by lazy { dimen(R.dimen.timeCircle_Length) / 2 }
-    private val centerY by lazy { dimen(R.dimen.timeCircle_Length) / 2 }
+    private val centerX by lazy { dimen(R.dimen.time_circle_length) / 2 }
+    private val centerY by lazy { dimen(R.dimen.time_circle_length) / 2 }
     private val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
-    private lateinit var circleFrameLayout: FrameLayout
-    private lateinit var circleImageView: ImageView
     private var isSelectionMode = false
     private var rotateAngle = INIT_ROTATION_ANGLE
     private var isZoomed = false
     private var rotateBaseIndex = CIRCLE_NUM / 2
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val ui = UI {
-            verticalLayout {
-                onClick { zoomOut() }
-                frameLayout {
-                    circleFrameLayout = frameLayout {
-                        onClick { zoomIn() }
-                        onTouch { _, event -> onTimeCircleTouched(event) }
-                        onLongClick { changeToSelectionMode() }
-                        circleImageView = imageView {
-                            imageResource = R.drawable.circle_image
-                            z = 2.0f
-                        }.lparams(wrapContent, wrapContent) {
-                            gravity = Gravity.CENTER
-                        }
-                        imageView {
-                            imageResource = R.drawable.circle_stroke_image
-                            z = 2.0f
-                        }.lparams(wrapContent, wrapContent) {
-                            gravity = Gravity.CENTER
-                        }
-                    }.lparams(dimen(R.dimen.timeCircle_Length), dimen(R.dimen.timeCircle_Length)) {
-                        gravity = Gravity.CENTER_HORIZONTAL
-                    }
-                    for (i in 0 until CIRCLE_NUM) {
-                        val circleView = CircleView(context)
-                        circleView.z = 1.0f
-                        circleFrameLayout.addView(circleView)
-                        circleViews[i] = circleView
-                    }
-                }.lparams(MATCH_PARENT, dimen(R.dimen.timeCircle_Length)) {
-                    gravity = Gravity.CENTER_HORIZONTAL
-                }
-            }
+        return inflater.inflate(R.layout.time_circle_fragment, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        time_circle_root_layout.setOnClickListener { zoomOut() }
+        time_circle_frame_layout.onClick { zoomIn() }
+        time_circle_frame_layout.onTouch { _, event -> onTimeCircleTouched(event) }
+        time_circle_frame_layout.onLongClick { changeToSelectionMode() }
+        for (i in 0 until CIRCLE_NUM) {
+            val circleView = CircleView(context)
+            circleView.z = 1.0f
+            time_circle_inner_frame_layout.addView(circleView)
+            circleViews[i] = circleView
         }
-        return ui.view
     }
 
     private fun zoomIn() {
         if (!isZoomed) {
-            circleFrameLayout.animate().scaleX(scale2).scaleY(scale2).y(position2).setDuration(duration).start()
-            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE2).scaleY(CIRCLE_IMAGE_SCALE2).setDuration(duration).start()
+            time_circle_frame_layout.animate().scaleX(scale2).scaleY(scale2).y(position2).setDuration(duration).start()
+//            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE2).scaleY(CIRCLE_IMAGE_SCALE2).setDuration(duration).start()
             isZoomed = true
         }
     }
@@ -92,8 +71,8 @@ class TimeCircleFragment : Fragment() {
     private fun zoomOut() {
         if (isZoomed) {
             initValues()
-            circleFrameLayout.animate().scaleX(SCALE1).scaleY(SCALE1).y(position1).setDuration(duration).rotation(rotateAngle).start()
-            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE1).scaleY(CIRCLE_IMAGE_SCALE1).setDuration(duration).start()
+            time_circle_frame_layout.animate().scaleX(SCALE1).scaleY(SCALE1).y(position1).setDuration(duration).rotation(rotateAngle).start()
+//            circleImageView.animate().scaleX(CIRCLE_IMAGE_SCALE1).scaleY(CIRCLE_IMAGE_SCALE1).setDuration(duration).start()
             isZoomed = false
         }
     }
@@ -135,7 +114,7 @@ class TimeCircleFragment : Fragment() {
     }
 
     private fun isTouchedInCircle(length: Float): Boolean {
-        return length < square(dimen(R.dimen.timeCircle_Length) / 2) && length > square(dimen(R.dimen.timeImage_Length) / 2)
+        return length < square(dimen(R.dimen.time_circle_length) / 2) && length > square(dimen(R.dimen.time_image_length) / 2)
     }
 
     private fun changeColorAndRotate(x: Float, y: Float) {
@@ -159,7 +138,7 @@ class TimeCircleFragment : Fragment() {
         if (rotateBaseIndex > CIRCLE_NUM - 1) rotateBaseIndex -= CIRCLE_NUM
         else if (rotateBaseIndex < 0) rotateBaseIndex += CIRCLE_NUM
         rotateAngle += rotateIndex * UNIT_ANGLE
-        circleFrameLayout.animate().rotation(-rotateAngle).setDuration(300).start()
+        time_circle_frame_layout.animate().rotation(-rotateAngle).setDuration(300).start()
     }
 
     private fun calculateRotateIndex(touchedIndex: Int): Int {

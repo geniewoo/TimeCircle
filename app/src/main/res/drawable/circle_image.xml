@@ -3,8 +3,8 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:shape="oval">
 	<size
-		android:width="@dimen/timeImage_Length"
-		android:height="@dimen/timeImage_Length"/>
+		android:width="@dimen/time_image_length"
+		android:height="@dimen/time_image_length"/>
 	<solid
 		android:color="#fff"/>
 </shape>

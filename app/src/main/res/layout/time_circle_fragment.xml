@@ -1,6 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/time_circle_root_layout"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
+
+	<FrameLayout
+		android:id="@+id/time_circle_frame_layout"
+		android:layout_width="@dimen/time_circle_length"
+		android:layout_height="@dimen/time_circle_length"
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintLeft_toLeftOf="parent"
+		app:layout_constraintRight_toRightOf="parent"
+		android:background="#22000000">
+
+		<FrameLayout
+			android:id="@+id/time_circle_inner_frame_layout"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</FrameLayout>
+
+		<FrameLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+
+			<ImageView
+				android:src="@drawable/circle_image"
+				android:layout_gravity="center"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"/>
+
+			<ImageView
+				android:src="@drawable/circle_stroke_image"
+				android:layout_gravity="center"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"/>
+
+		</FrameLayout>
+
+	</FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

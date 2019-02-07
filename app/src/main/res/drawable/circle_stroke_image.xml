@@ -3,8 +3,8 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:shape="oval">
 	<size
-		android:width="@dimen/timeCircle_Length"
-		android:height="@dimen/timeCircle_Length"/>
+		android:width="@dimen/time_circle_length"
+		android:height="@dimen/time_circle_length"/>
 	<stroke
 		android:width="2dp"
 		android:color="#fff"/>

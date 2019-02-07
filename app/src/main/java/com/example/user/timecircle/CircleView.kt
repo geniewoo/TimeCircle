@@ -19,7 +19,7 @@ private const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INT
 class CircleView(context: Context?) : View(context) {
     var color = Color.BLUE
     private val circleStartPos = 2.0f
-    private val circleSize = dimen(R.dimen.timeCircle_Length).toFloat() - circleStartPos
+    private val circleSize = dimen(R.dimen.time_circle_length).toFloat() - circleStartPos
     private var startAngle = 0.0f
     private var initialized = false
 
