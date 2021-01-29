@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.time_circle_fragment.*
+import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 
 /**
  * Created by SungWoo on 2018-08-06.
@@ -13,12 +14,15 @@ import kotlinx.android.synthetic.main.time_circle_fragment.*
 
 class TimeCircleFragment : Fragment() {
 
+    lateinit var circleTouchManager: CircleTouchManager
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.time_circle_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        time_circle_root_layout.setOnClickListener { time_circle_frame_layout.zoomOut() }
+        circleTouchManager = CircleTouchManager(view.time_circle_frame_layout)
+        time_circle_root_layout.setOnClickListener { circleTouchManager.zoomOut() }
     }
 }

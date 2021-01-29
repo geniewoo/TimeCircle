@@ -55,4 +55,14 @@ class CircleView(context: Context?) : View(context) {
             canvas?.drawArc(circleStartPos, circleStartPos, circleSize, circleSize, startAngle, UNIT_DRAW_ANGLE, true, paint)
         }
     }
+
+    fun changeColor() {
+        color = Color.GREEN
+        invalidate()
+    }
+
+    fun changeColorForDebug() {
+        color = Color.RED
+        invalidate()
+    }
 }

@@ -5,7 +5,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<com.example.user.timecircle.views.TimeCircleLayout
+	<FrameLayout
 		android:id="@+id/time_circle_frame_layout"
 		android:layout_width="@dimen/time_circle_length"
 		android:layout_height="@dimen/time_circle_length"
@@ -38,6 +38,6 @@
 
 		</FrameLayout>
 
-	</com.example.user.timecircle.views.TimeCircleLayout>
+	</FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
