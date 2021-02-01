@@ -35,8 +35,8 @@ class CircleTouchManager(val layout: FrameLayout) {
     private var isZoomed = false
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
-    private val ZOOM_IN_X by lazy { context.dimen(R.dimen.zoom_in_x) / 2 }
-    private val ZOOM_IN_Y by lazy { context.dimen(R.dimen.zoom_in_y)}
+    private val ZOOM_IN_X by lazy { context.dimen(R.dimen.zoom_in_x) }
+    private val ZOOM_IN_Y by lazy { context.dimen(R.dimen.zoom_in_y) }
     private var originX = 0f
     private val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
     private var isSelectionMode = false
@@ -113,18 +113,18 @@ class CircleTouchManager(val layout: FrameLayout) {
             return false
         }
 
-        val x = centerX - motionEvent.x
-        val y = centerY - motionEvent.y
+        val x = motionEvent.x - centerX
+        val y = motionEvent.y - centerY
 
-        val length = square(x) + square(y)
 
-        if (isTouchedInCircle(length)) {
+        if (isTouchedInCircle(x, y)) {
             changeColorAndRotate(x, y)
         }
         return true
     }
 
-    private fun isTouchedInCircle(length: Float): Boolean {
+    private fun isTouchedInCircle(x: Float, y: Float): Boolean {
+        val length = square(x) + square(y)
         return length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)
     }
 
@@ -217,7 +217,7 @@ class CircleTouchManager(val layout: FrameLayout) {
 //        rotate.duration = 50
 //        rotate.fillAfter
 //        rotate.interpolator = LinearInterpolator()
-        rotateAngle += UNIT_ANGLE * -index
+        rotateAngle -= UNIT_ANGLE * index
 //        layout.startAnimation(rotate)
 //        layout.animate().rotationBy(-index * UNIT_ANGLE).setDuration(50).start()
 
@@ -258,16 +258,43 @@ class CircleTouchManager(val layout: FrameLayout) {
         }
     }
 
-    private fun getCircleIndex(x: Float, y: Float): Int {
-        return (((-atan2(x, y) * (180 / Math.PI) + 360) % 360) / UNIT_ANGLE).toInt()
+    private fun getCircleIndex(x: Float, y: Float, isOutSideRequest: Boolean = false): Int {
+        var degree = atan2(x, -y) * (180 / Math.PI) + 720
+        if (isOutSideRequest) {
+            degree -= rotateAngle
+        }
+        return ((degree % 360) / UNIT_ANGLE).toInt()
     }
 
     private fun square(mono: Float): Float = mono * mono
     private fun square(mono: Int): Float = (mono * mono).toFloat()
 
+    fun onActivityTouch(x: Float, y: Float): Boolean {
+        cocoLog("centerX : $centerX $ZOOM_IN_X x : $x    centerY : $centerY $ZOOM_IN_Y y : $y")
+        // 줌상태 고려해주지 않기 때문에 2로 나누어준다.
+        val activityX = (x - (ZOOM_IN_X + centerX)) / 2
+        val activityY = (y - (ZOOM_IN_Y + centerY)) / 2
+
+
+        val isValid = isTouchedInCircle(activityX, activityY)
+        if (isValid) {
+            val touchedIndex = getCircleIndex(activityX, activityY, true)
+            circleViews[touchedIndex]?.activityColor()
+        }
+        return isValid
+    }
+
     private enum class ROTATE {
         UP,
         DOWN,
         NONE;
+    }
+
+    fun Int.adjustIndex(): Int {
+        return when {
+            this >= CIRCLE_NUM -> this - CIRCLE_NUM
+            this < 0 -> this + CIRCLE_NUM
+            else -> this
+        }
     }
 }

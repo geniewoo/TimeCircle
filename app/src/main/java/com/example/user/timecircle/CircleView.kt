@@ -56,6 +56,11 @@ class CircleView(context: Context?) : View(context) {
         }
     }
 
+    fun activityColor() {
+        color = Color.CYAN
+        invalidate()
+    }
+
     fun changeColor() {
         color = Color.GREEN
         invalidate()
