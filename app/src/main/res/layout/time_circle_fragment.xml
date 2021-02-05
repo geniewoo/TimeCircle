@@ -46,7 +46,7 @@
 		android:layout_height="match_parent"
 		app:layout_constraintRight_toRightOf="parent">
 
-		<com.example.user.timecircle.common.views.DragView
+		<com.example.user.timecircle.common.views.DragActivityView
 			android:id="@+id/drag_view"
 			android:layout_width="50dp"
 			android:layout_height="50dp"

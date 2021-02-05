@@ -6,5 +6,7 @@
 
 	<color name="green">#0F0</color>
 	<color name="yellow">#ff0</color>
-	<color name="transParent">#0000</color>
+	<color name="red">#f00</color>
+	<color name="blue">#00f</color>
+	<color name="transparent">#0000</color>
 </resources>

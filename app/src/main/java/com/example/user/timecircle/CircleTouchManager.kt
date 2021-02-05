@@ -2,14 +2,12 @@ package com.example.user.timecircle
 
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.animation.Animation
-import android.view.animation.LinearInterpolator
-import android.view.animation.RotateAnimation
 import android.widget.FrameLayout
 import androidx.core.view.GestureDetectorCompat
+import com.example.user.timecircle.common.CIRCLE_NUM
 import com.example.user.timecircle.common.DEBUG
+import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
-import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -20,15 +18,12 @@ import kotlin.math.atan2
 private const val INIT_ROTATION_ANGLE = 0.0f
 private const val SCALE1 = 1.0f
 private const val SCALE2 = 2.0f
-private const val CIRCLE_IMAGE_SCALE1 = 1.0f
-private const val CIRCLE_IMAGE_SCALE2 = 1.6f
 private const val ZOOM_OUT_Y = 0.0f
 private const val DURATION: Long = 500
 private const val ROTATE_BASE_RIGHT_UNIT = -4
 private const val ROTATE_BASE_LEFT_UNIT = 3
-private const val MAX_ROTATE_INDEX = 1
 
-class CircleTouchManager(val layout: FrameLayout) {
+class CircleTouchManager(private val layout: FrameLayout) {
 
     private val context = layout.context
 
@@ -38,13 +33,13 @@ class CircleTouchManager(val layout: FrameLayout) {
     private val ZOOM_IN_X by lazy { context.dimen(R.dimen.zoom_in_x) }
     private val ZOOM_IN_Y by lazy { context.dimen(R.dimen.zoom_in_y) }
     private var originX = 0f
-    private val circleViews = arrayOfNulls<CircleView>(CIRCLE_NUM)
     private var isSelectionMode = false
     private var rotateAngle = INIT_ROTATION_ANGLE
     private var isRotating = false
     private var rotateCoroutine: Job? = null
     private var antiClockwiseRotating = false
     private var clockwiseRotating = false
+    private val colorViewsController = CircleViewsController(layout)
 
     private var rotateBaseIndex = CIRCLE_NUM / 4
 
@@ -53,13 +48,6 @@ class CircleTouchManager(val layout: FrameLayout) {
         layout.onTouch { _, event ->
             onTimeCircleTouched(event)
             gestureDetector.onTouchEvent(event)
-        }
-
-        for (i in 0 until CIRCLE_NUM) {
-            val circleView = CircleView(context)
-            circleView.z = 1.0f
-            layout.time_circle_inner_frame_layout.addView(circleView)
-            circleViews[i] = circleView
         }
 
         initValues()
@@ -131,7 +119,7 @@ class CircleTouchManager(val layout: FrameLayout) {
     private fun changeColorAndRotate(x: Float, y: Float) {
         // touchedIndex 현재 눌린 시간 인덱
         val touchedIndex = getCircleIndex(x, y)
-        circleViews[touchedIndex]?.changeColor()
+        colorViewsController.changeColor(ActivityColor.COLOR1, touchedIndex)
 
         computeRotateState(touchedIndex)
 
@@ -233,7 +221,7 @@ class CircleTouchManager(val layout: FrameLayout) {
 
     private fun cocoDebugHighlightBaseIndex() {
         if (DEBUG) {
-            circleViews[rotateBaseIndex]?.changeColorForDebug()
+            colorViewsController.changeColor(ActivityColor.COLOR3, rotateBaseIndex)
         }
     }
 
@@ -269,32 +257,19 @@ class CircleTouchManager(val layout: FrameLayout) {
     private fun square(mono: Float): Float = mono * mono
     private fun square(mono: Int): Float = (mono * mono).toFloat()
 
-    fun onActivityTouch(x: Float, y: Float): Boolean {
+    fun onActivityTouch(x: Float, y: Float, touchFinish: Boolean): Boolean {
         cocoLog("centerX : $centerX $ZOOM_IN_X x : $x    centerY : $centerY $ZOOM_IN_Y y : $y")
         // 줌상태 고려해주지 않기 때문에 2로 나누어준다.
         val activityX = (x - (ZOOM_IN_X + centerX)) / 2
         val activityY = (y - (ZOOM_IN_Y + centerY)) / 2
 
-
         val isValid = isTouchedInCircle(activityX, activityY)
         if (isValid) {
             val touchedIndex = getCircleIndex(activityX, activityY, true)
-            circleViews[touchedIndex]?.activityColor()
+            colorViewsController.changeColorForActivityDrag(ActivityColor.COLOR2, touchedIndex, touchFinish)
+        } else if (touchFinish) {
+            colorViewsController.removeColorForActivityDrag()
         }
         return isValid
-    }
-
-    private enum class ROTATE {
-        UP,
-        DOWN,
-        NONE;
-    }
-
-    fun Int.adjustIndex(): Int {
-        return when {
-            this >= CIRCLE_NUM -> this - CIRCLE_NUM
-            this < 0 -> this + CIRCLE_NUM
-            else -> this
-        }
     }
 }

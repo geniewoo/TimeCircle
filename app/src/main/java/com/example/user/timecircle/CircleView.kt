@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
+import com.example.user.timecircle.common.UNIT_ANGLE
 import org.jetbrains.anko.dimen
 
 /**
@@ -12,8 +13,6 @@ import org.jetbrains.anko.dimen
  */
 private const val MINUTE_INTERVAL = 0.3f
 private const val HOUR_INTERVAL = 0.6f
-const val CIRCLE_NUM = 144
-const val UNIT_ANGLE = 360.0f / CIRCLE_NUM
 private const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INTERVAL) / 6
 
 class CircleView(context: Context?) : View(context) {
@@ -56,18 +55,8 @@ class CircleView(context: Context?) : View(context) {
         }
     }
 
-    fun activityColor() {
-        color = Color.CYAN
-        invalidate()
-    }
-
-    fun changeColor() {
-        color = Color.GREEN
-        invalidate()
-    }
-
-    fun changeColorForDebug() {
-        color = Color.RED
+    fun changeColor(resourceId: Int) {
+        color = context.getColor(resourceId)
         invalidate()
     }
 }

@@ -25,8 +25,8 @@ class TimeCircleFragment : Fragment() {
         circleTouchManager = CircleTouchManager(view.time_circle_frame_layout)
         time_circle_root_layout.setOnClickListener { circleTouchManager.zoomOut() }
 
-        drag_view.onTouch = { x, y ->
-            circleTouchManager.onActivityTouch(x, y)
+        drag_view.onTouch = { x, y, touchFinish ->
+            circleTouchManager.onActivityTouch(x, y, touchFinish)
         }
     }
 }
