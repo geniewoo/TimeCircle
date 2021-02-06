@@ -248,7 +248,6 @@ class CirclePresenter(private val layout: FrameLayout) {
     private fun square(mono: Int): Float = (mono * mono).toFloat()
 
     fun onActivityTouch(x: Float, y: Float, touchFinish: Boolean): Boolean {
-        cocoLog("centerX : $centerX $ZOOM_IN_X x : $x    centerY : $centerY $ZOOM_IN_Y y : $y")
         // 줌상태 고려해주지 않기 때문에 2로 나누어준다.
         val activityX = (x - (ZOOM_IN_X + centerX)) / 2
         val activityY = (y - (ZOOM_IN_Y + centerY)) / 2

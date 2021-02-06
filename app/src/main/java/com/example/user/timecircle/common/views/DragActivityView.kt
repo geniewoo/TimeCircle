@@ -18,19 +18,23 @@ class DragActivityView @JvmOverloads constructor(context: Context, attrs: Attrib
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event?.action ?: return false
+        val windowPos = IntArray(2)
+        getLocationInWindow(windowPos)
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 originX = x
                 originY = y
+
                 moveX = x - event.rawX
                 moveY = y - event.rawY
                 cocoLog("x: $x   y: $y   rawX: ${event.rawX}   rawY: ${event.rawY}")
             }
             MotionEvent.ACTION_MOVE -> {
+
                 animate().x(event.rawX + moveX).y(event.rawY + moveY).setDuration(0).start()
                 cocoLog("rawX: ${event.rawX}   rawY: ${event.rawY}   moveX: $moveX   moveY: $moveY")
 
-                backgroundColorResource = if (onTouch.invoke(event.rawX, event.rawY, false)) {
+                backgroundColorResource = if (onTouch.invoke(event.rawX - windowPos[0] + x, event.rawY - windowPos[1] + y, false)) {
                     R.color.transparent
                 } else {
                     R.color.yellow
@@ -38,7 +42,7 @@ class DragActivityView @JvmOverloads constructor(context: Context, attrs: Attrib
             }
             MotionEvent.ACTION_UP -> {
                 backgroundColorResource = R.color.yellow
-                onTouch.invoke(event.rawX, event.rawY, true)
+                onTouch.invoke(event.rawX - windowPos[0] + x, event.rawY - windowPos[1] + y, true)
                 animate().x(originX).y(originY).setDuration(0).start()
             }
         }
