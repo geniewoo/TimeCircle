@@ -5,14 +5,14 @@ import com.example.user.timecircle.common.CIRCLE_NUM
 import com.example.user.timecircle.common.CommonUtil.convertToCircleIndex
 import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 
-private const val ACTIVITY_DRAG_DEFAULT_NUM = 3
-private val DEFAULT_COLOR = ActivityColor.COLOR4.colorRes
+private val DEFAULT_COLOR = ActivityColor.COLOR4
 
 class CircleViewsController(layout: FrameLayout) {
 
-    var activityLastDragIndex: Int? = null
+    var lastDropActivitySet: ActivitySet? = null
 
     private val circleViews = ArrayList<CircleView>()
+    private val activitySetManager = ActivitySetManager()
 
     init {
         for (i in 0 until CIRCLE_NUM) {
@@ -23,27 +23,51 @@ class CircleViewsController(layout: FrameLayout) {
         }
     }
 
-    fun changeColor(color: ActivityColor, index: Int) {
-        circleViews[index.convertToCircleIndex()].changeColor(color.colorRes)
+    private fun changeColor(color: ActivityColor, index: Int) {
+        index.convertToCircleIndex().takeIf { !activitySetManager.isActivitySetExist(it) }?.let {
+            circleViews[it].changeColor(color.colorRes)
+        }
     }
 
-    fun changeColorForActivityDrag(color: ActivityColor, index: Int, touchFinish: Boolean) {
-        for (i in -1 until ACTIVITY_DRAG_DEFAULT_NUM - 1) {
-            activityLastDragIndex?.let {
-                circleViews[(it + i).convertToCircleIndex()].changeColor(DEFAULT_COLOR)
-            }
-            circleViews[(index + i).convertToCircleIndex()].changeColor(color.colorRes)
+    fun changeColorForActivityDrop(color: ActivityColor, index: Int, dropConfirm: Boolean): Boolean {
+        if (activitySetManager.isActivitySetExist(index)) {
+            removeColorForActivityDrop()
+            return false
         }
-        activityLastDragIndex = if (touchFinish) null else index
+        val tempActivitySet = activitySetManager.makeActivitySet(index)
+        removeColorForDrop()
+        changeColorForDrop(color, tempActivitySet)
+        lastDropActivitySet = if (dropConfirm) {
+            addActivitySet(index)
+            null
+        } else {
+            tempActivitySet
+        }
+        return true
     }
 
-    fun removeColorForActivityDrag() {
-        for (i in -1 until ACTIVITY_DRAG_DEFAULT_NUM - 1) {
-            activityLastDragIndex?.let {
-                circleViews[(it + i).convertToCircleIndex()].changeColor(DEFAULT_COLOR)
+    private fun addActivitySet(index: Int) {
+        val activitySet = activitySetManager.makeActivitySet(index)
+        activitySetManager.insertActivitySet(activitySet)
+    }
+
+    fun removeColorForActivityDrop() {
+        removeColorForDrop()
+        lastDropActivitySet = null
+    }
+
+    private fun changeColorForDrop(color: ActivityColor, activitySet: ActivitySet) {
+        for (i in activitySet.fromIndex..activitySet.toIndex) {
+            changeColor(color, i)
+        }
+    }
+
+    private fun removeColorForDrop() {
+        lastDropActivitySet?.run {
+            for (i in fromIndex..toIndex) {
+                changeColor(DEFAULT_COLOR, i)
             }
         }
-        activityLastDragIndex = null
     }
 }
 

@@ -5,7 +5,6 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.core.view.GestureDetectorCompat
 import com.example.user.timecircle.common.CIRCLE_NUM
-import com.example.user.timecircle.common.DEBUG
 import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
 import kotlinx.coroutines.*
@@ -23,7 +22,7 @@ private const val DURATION: Long = 500
 private const val ROTATE_BASE_RIGHT_UNIT = -4
 private const val ROTATE_BASE_LEFT_UNIT = 3
 
-class CircleTouchManager(private val layout: FrameLayout) {
+class CirclePresenter(private val layout: FrameLayout) {
 
     private val context = layout.context
 
@@ -119,7 +118,6 @@ class CircleTouchManager(private val layout: FrameLayout) {
     private fun changeColorAndRotate(x: Float, y: Float) {
         // touchedIndex 현재 눌린 시간 인덱
         val touchedIndex = getCircleIndex(x, y)
-        colorViewsController.changeColor(ActivityColor.COLOR1, touchedIndex)
 
         computeRotateState(touchedIndex)
 
@@ -135,8 +133,6 @@ class CircleTouchManager(private val layout: FrameLayout) {
 //        Log.i("coco", "coerceIn $rotateIndex")
 //        if (rotateBaseIndex > CIRCLE_NUM - 1) rotateBaseIndex -= CIRCLE_NUM
 //        else if (rotateBaseIndex < 0) rotateBaseIndex += CIRCLE_NUM
-//
-        cocoDebugHighlightBaseIndex()
 //
 //        rotateAngle += rotateIndex * UNIT_ANGLE
 //        layout.animate().rotation(-rotateAngle).setDuration(100).start()
@@ -219,12 +215,6 @@ class CircleTouchManager(private val layout: FrameLayout) {
         }
     }
 
-    private fun cocoDebugHighlightBaseIndex() {
-        if (DEBUG) {
-            colorViewsController.changeColor(ActivityColor.COLOR3, rotateBaseIndex)
-        }
-    }
-
     // rotateBaseIndex와 몇 칸 떨어져 있는지 계산
     private fun calculateRotateIndex(touchedIndex: Int): Int {
         return when {
@@ -266,9 +256,10 @@ class CircleTouchManager(private val layout: FrameLayout) {
         val isValid = isTouchedInCircle(activityX, activityY)
         if (isValid) {
             val touchedIndex = getCircleIndex(activityX, activityY, true)
-            colorViewsController.changeColorForActivityDrag(ActivityColor.COLOR2, touchedIndex, touchFinish)
-        } else if (touchFinish) {
-            colorViewsController.removeColorForActivityDrag()
+            // 이미 다른 엑티비티가 있는 경우 return
+            return colorViewsController.changeColorForActivityDrop(ActivityColor.COLOR2, touchedIndex, touchFinish)
+        } else {
+            colorViewsController.removeColorForActivityDrop()
         }
         return isValid
     }

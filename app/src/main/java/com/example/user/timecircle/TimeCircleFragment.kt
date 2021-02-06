@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 
 class TimeCircleFragment : Fragment() {
 
-    lateinit var circleTouchManager: CircleTouchManager
+    lateinit var circlePresenter: CirclePresenter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.time_circle_fragment, container, false)
@@ -22,11 +22,11 @@ class TimeCircleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        circleTouchManager = CircleTouchManager(view.time_circle_frame_layout)
-        time_circle_root_layout.setOnClickListener { circleTouchManager.zoomOut() }
+        circlePresenter = CirclePresenter(view.time_circle_frame_layout)
+        time_circle_root_layout.setOnClickListener { circlePresenter.zoomOut() }
 
         drag_view.onTouch = { x, y, touchFinish ->
-            circleTouchManager.onActivityTouch(x, y, touchFinish)
+            circlePresenter.onActivityTouch(x, y, touchFinish)
         }
     }
 }
