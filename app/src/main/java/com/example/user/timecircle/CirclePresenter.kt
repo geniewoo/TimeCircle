@@ -1,9 +1,7 @@
 package com.example.user.timecircle
 
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.FrameLayout
-import androidx.core.view.GestureDetectorCompat
 import com.example.user.timecircle.common.UNIT_ANGLE
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -15,57 +13,68 @@ class CirclePresenter(private val layout: FrameLayout) {
 
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
-    private var isSelectionMode = false
     private var animationController = AnimationController(layout)
-    private val colorViewsController = CircleViewsController(layout)
+    private val circleViewsController = CircleViewsController(layout)
+    private var touchMode: TouchMode = TouchMode.None
 
 
     init {
         layout.onClick { animationController.zoomIn() }
         layout.onTouch { _, event ->
             onTimeCircleTouched(event)
-            gestureDetector.onTouchEvent(event)
         }
 
         animationController.initValues()
     }
-
-    private val gestureDetector = GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onLongPress(e: MotionEvent?) {
-            if (animationController.isZoomed) {
-                isSelectionMode = true
-            }
-        }
-    })
 
     private fun onTimeCircleTouched(motionEvent: MotionEvent): Boolean {
         if (!animationController.isZoomed) {
             return false
         }
 
-        if (motionEvent.action == MotionEvent.ACTION_UP) {
-            isSelectionMode = false
-            animationController.initActivityTouchValues()
-            return true
-        }
-
-        if (!isSelectionMode) {
-            return false
-        }
-
         val x = motionEvent.x - centerX
         val y = motionEvent.y - centerY
 
-
-        if (isTouchedInCircle(x, y)) {
-            changeColorAndRotate(x, y)
+        when (motionEvent.action) {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                when (touchMode) {
+                    is TouchMode.AdjustActivity -> {
+                       circleViewsController.adjustActivityDone(touchMode as TouchMode.AdjustActivity)
+                    }
+                }
+                touchMode = TouchMode.None
+                animationController.initActivityTouchValues()
+                return true
+            }
+            MotionEvent.ACTION_DOWN -> {
+                touchMode = findTouchMode(x, y)
+                return touchMode != TouchMode.None
+            }
+            MotionEvent.ACTION_MOVE -> {
+                when (touchMode) {
+                    is TouchMode.Rotating -> {
+                        changeColorAndRotate(x, y)
+                    }
+                    is TouchMode.AdjustActivity -> {
+                        val touchedIndex = getCircleIndex(x, y)
+                        (touchMode as? TouchMode.AdjustActivity)?.let {
+                            circleViewsController.adjustActivity(touchedIndex, it)
+                        }
+                    }
+                    else -> return false
+                }
+            }
         }
-        return true
+        return false
     }
 
-    private fun isTouchedInCircle(x: Float, y: Float): Boolean {
+    private fun findTouchMode(x: Float, y: Float): TouchMode {
         val length = square(x) + square(y)
-        return length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)
+        return if (length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)) {
+            val touchedIndex = getCircleIndex(x, y)
+            circleViewsController.returnIndexEdgeOfActivitySet(touchedIndex)
+                    ?: TouchMode.Rotating(touchedIndex)
+        } else TouchMode.None
     }
 
     private fun changeColorAndRotate(x: Float, y: Float) {
@@ -108,13 +117,13 @@ class CirclePresenter(private val layout: FrameLayout) {
         val activityX = (x - (animationController.zoomInX + centerX)) / 2
         val activityY = (y - (animationController.zoomInY + centerY)) / 2
 
-        val isValid = isTouchedInCircle(activityX, activityY)
+        val isValid = findIsInCircle(activityX, activityY)
         if (isValid) {
             val touchedIndex = getCircleIndex(activityX, activityY, true)
             // 이미 다른 엑티비티가 있는 경우 return
-            return colorViewsController.changeColorForActivityDrop(ActivityColor.COLOR2, touchedIndex, touchFinish)
+            return circleViewsController.changeColorForActivityDrop(ActivityColor.COLOR2, touchedIndex, touchFinish)
         } else {
-            colorViewsController.removeColorForActivityDrop()
+            circleViewsController.removeColorForActivityDrop()
         }
         return isValid
     }
@@ -124,5 +133,10 @@ class CirclePresenter(private val layout: FrameLayout) {
             animationController.zoomOut()
             animationController.initValues()
         }
+    }
+
+    private fun findIsInCircle(x: Float, y: Float): Boolean {
+        val length = square(x) + square(y)
+        return length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)
     }
 }

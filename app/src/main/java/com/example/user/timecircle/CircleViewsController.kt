@@ -69,6 +69,21 @@ class CircleViewsController(layout: FrameLayout) {
             }
         }
     }
+
+    fun returnIndexEdgeOfActivitySet(index: Int): TouchMode.AdjustActivity? = activitySetManager.returnIndexEdgeOfActivitySet(index)
+
+    fun adjustActivity(touchedIndex: Int, adjustActivity: TouchMode.AdjustActivity) {
+        activitySetManager.adjustAvailableIndex(touchedIndex, adjustActivity) {
+            fromIndex, toIndex, color ->
+            for (i in fromIndex..toIndex) {
+                circleViews[i].changeColor(color.colorRes)
+            }
+        }
+    }
+
+    fun adjustActivityDone(adjustActivity: TouchMode.AdjustActivity) {
+        activitySetManager.adjustActivityDone(adjustActivity)
+    }
 }
 
 enum class ActivityColor(val colorRes: Int) {
