@@ -5,8 +5,6 @@ import com.example.user.timecircle.common.CIRCLE_NUM
 import com.example.user.timecircle.common.CommonUtil.convertToCircleIndex
 import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 
-private val DEFAULT_COLOR = ActivityColor.COLOR4
-
 class CircleViewsController(layout: FrameLayout) {
 
     var lastDropActivitySet: ActivitySet? = null
@@ -23,22 +21,22 @@ class CircleViewsController(layout: FrameLayout) {
         }
     }
 
-    private fun changeColor(color: ActivityColor, index: Int) {
+    private fun changeColor(component: ActivityComponent, index: Int) {
         index.convertToCircleIndex().takeIf { !activitySetManager.isActivitySetExist(it) }?.let {
-            circleViews[it].changeColor(color.colorRes)
+            circleViews[it].changeColor(component.colorRes)
         }
     }
 
-    fun changeColorForActivityDrop(color: ActivityColor, index: Int, dropConfirm: Boolean): Boolean {
+    fun changeColorForActivityDrop(component: ActivityComponent, index: Int, dropConfirm: Boolean): Boolean {
         if (activitySetManager.isActivitySetExist(index)) {
             removeColorForActivityDrop()
             return false
         }
-        val tempActivitySet = activitySetManager.makeActivitySet(index)
+        val tempActivitySet = activitySetManager.makeActivitySet(index, component)
         removeColorForDrop()
-        changeColorForDrop(color, tempActivitySet)
+        changeColorForDrop(component, tempActivitySet)
         lastDropActivitySet = if (dropConfirm) {
-            addActivitySet(index)
+            addActivitySet(index, component)
             null
         } else {
             tempActivitySet
@@ -46,8 +44,8 @@ class CircleViewsController(layout: FrameLayout) {
         return true
     }
 
-    private fun addActivitySet(index: Int) {
-        val activitySet = activitySetManager.makeActivitySet(index)
+    private fun addActivitySet(index: Int, component: ActivityComponent) {
+        val activitySet = activitySetManager.makeActivitySet(index, component)
         activitySetManager.insertActivitySet(activitySet)
     }
 
@@ -56,16 +54,16 @@ class CircleViewsController(layout: FrameLayout) {
         lastDropActivitySet = null
     }
 
-    private fun changeColorForDrop(color: ActivityColor, activitySet: ActivitySet) {
+    private fun changeColorForDrop(component: ActivityComponent, activitySet: ActivitySet) {
         for (i in activitySet.fromIndex..activitySet.toIndex) {
-            changeColor(color, i)
+            changeColor(component, i)
         }
     }
 
     private fun removeColorForDrop() {
         lastDropActivitySet?.run {
             for (i in fromIndex..toIndex) {
-                changeColor(DEFAULT_COLOR, i)
+                changeColor(ActivityComponent.ComponentTransparent, i)
             }
         }
     }
@@ -86,11 +84,12 @@ class CircleViewsController(layout: FrameLayout) {
     }
 }
 
-enum class ActivityColor(val colorRes: Int) {
-    COLOR1(R.color.yellow),
-    COLOR2(R.color.green),
-    COLOR3(R.color.red),
-    COLOR4(R.color.blue),
-    COLOR_TRANSPARENT(R.color.transparent)
+enum class ActivityComponent(val colorRes: Int) {
+    Component1(R.color.yellow),
+    Component2(R.color.green),
+    Component3(R.color.red),
+    Component4(R.color.blue),
+    Component5(R.color.pink),
+    ComponentTransparent(R.color.transparent)
     ;
 }

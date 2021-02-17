@@ -16,7 +16,7 @@ private const val HOUR_INTERVAL = 0.6f
 private const val UNIT_DRAW_ANGLE = UNIT_ANGLE - (MINUTE_INTERVAL * 5 + HOUR_INTERVAL) / 6
 
 class CircleView(context: Context?) : View(context) {
-    var color = Color.BLUE
+    var color = Color.TRANSPARENT
     private val circleStartPos = 2.0f
     private val circleSize = dimen(R.dimen.time_circle_length).toFloat() - circleStartPos
     private var startAngle = 0.0f

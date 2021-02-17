@@ -1,61 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.example.user.timecircle.common.views.TouchPropagationLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:id="@+id/time_circle_root_layout"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/time_circle_root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-	<FrameLayout
-		android:id="@+id/time_circle_frame_layout"
-		android:layout_width="@dimen/time_circle_length"
-		android:layout_height="@dimen/time_circle_length"
-		app:layout_constraintTop_toTopOf="parent"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
-		android:background="#22000000">
+    <FrameLayout
+        android:id="@+id/time_circle_frame_layout"
+        android:layout_width="@dimen/time_circle_length"
+        android:layout_height="@dimen/time_circle_length"
+        android:background="@color/transparent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-		<FrameLayout
-			android:id="@+id/time_circle_inner_frame_layout"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content">
-		</FrameLayout>
+        <FrameLayout
+            android:id="@+id/time_circle_inner_frame_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-		<FrameLayout
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content">
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-			<ImageView
-				app:srcCompat="@drawable/circle_image"
-				android:layout_gravity="center"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/circle_image" />
 
-			<ImageView
-				app:srcCompat="@drawable/circle_stroke_image"
-				android:layout_gravity="center"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/circle_stroke_image" />
 
-		</FrameLayout>
+        </FrameLayout>
 
-	</FrameLayout>
+    </FrameLayout>
 
-	<androidx.constraintlayout.widget.ConstraintLayout
-		android:id="@+id/activity_list"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		app:layout_constraintRight_toRightOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/activity_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintRight_toRightOf="parent">
 
-		<com.example.user.timecircle.common.views.DragActivityView
-			android:id="@+id/drag_view"
-			android:layout_width="50dp"
-			android:layout_height="50dp"
-			app:layout_constraintTop_toTopOf="parent"
-			app:layout_constraintBottom_toBottomOf="parent"
-			app:layout_constraintRight_toRightOf="parent"
-			android:background="@color/yellow"
-			android:layout_marginRight="10dp" />
+        <com.example.user.timecircle.common.views.DragActivityView
+            android:id="@+id/drag_view1"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/yellow"
+            app:dragActivityColor="0"
+            app:layout_constraintVertical_chainStyle="spread"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/drag_view2"/>
 
-	</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.example.user.timecircle.common.views.DragActivityView
+            android:id="@+id/drag_view2"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/green"
+            app:layout_constraintVertical_chainStyle="spread"
+            app:dragActivityColor="1"
+            app:layout_constraintTop_toBottomOf="@id/drag_view1"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/drag_view3" />
+
+        <com.example.user.timecircle.common.views.DragActivityView
+            android:id="@+id/drag_view3"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/red"
+            app:layout_constraintVertical_chainStyle="spread"
+            app:dragActivityColor="2"
+            app:layout_constraintTop_toBottomOf="@id/drag_view2"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/drag_view4" />
+
+        <com.example.user.timecircle.common.views.DragActivityView
+            android:id="@+id/drag_view4"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/blue"
+            app:layout_constraintVertical_chainStyle="spread"
+            app:dragActivityColor="3"
+            app:layout_constraintTop_toBottomOf="@id/drag_view3"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/drag_view5" />
+
+        <com.example.user.timecircle.common.views.DragActivityView
+            android:id="@+id/drag_view5"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/pink"
+            app:layout_constraintVertical_chainStyle="spread"
+            app:dragActivityColor="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/drag_view4" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.example.user.timecircle.common.views.TouchPropagationLayout>

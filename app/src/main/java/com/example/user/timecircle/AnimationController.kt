@@ -1,6 +1,7 @@
 package com.example.user.timecircle
 
 import android.widget.FrameLayout
+import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.CIRCLE_NUM
 import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
@@ -15,7 +16,7 @@ private const val ROTATE_BASE_RIGHT_UNIT = -4
 private const val ROTATE_BASE_LEFT_UNIT = 3
 private const val INIT_ROTATION_ANGLE = 0.0f
 
-class AnimationController(val layout: FrameLayout) {
+class AnimationController(private val layout: FrameLayout, lifecycleOwner: LifecycleOwner, private val viewModel: TimeCircleViewModel) {
     private var originX = 0f
     var rotateAngle = INIT_ROTATION_ANGLE
     private var rotateBaseIndex = CIRCLE_NUM / 4
@@ -29,25 +30,37 @@ class AnimationController(val layout: FrameLayout) {
 
     var isZoomed = false
 
+    init {
+        viewModel.isZoom.observe(lifecycleOwner) {
+            isZoomed = if (it) {
+                zoomIn()
+                true
+            } else {
+                zoomOut()
+                false
+            }
+        }
+    }
+
     fun initValues() {
         rotateAngle = INIT_ROTATION_ANGLE
         rotateBaseIndex = CIRCLE_NUM / 4
     }
 
-    fun zoomIn() {
+    private fun zoomIn() {
         if (!isZoomed) {
             originX = layout.x
             layout.animate().scaleX(SCALE2).scaleY(SCALE2).x(zoomInX.toFloat()).y(zoomInY.toFloat()).setDuration(DURATION).start()
-            isZoomed = true
         }
     }
 
-    fun zoomOut() {
-            layout.animate().scaleX(SCALE1).scaleY(SCALE1).x(originX).y(ZOOM_OUT_Y).setDuration(DURATION).rotation(0f).start()
-            isZoomed = false
+    private fun zoomOut() {
+        if (originX == 0f) return
+        layout.animate().scaleX(SCALE1).scaleY(SCALE1).x(originX).y(ZOOM_OUT_Y).setDuration(DURATION).rotation(0f).start()
+        initValues()
     }
 
-    // rotateBaseIndex와 몇 칸 떨어져 있는지 계산
+    // rotateBaseIndex 와 몇 칸 떨어져 있는지 계산
     private fun calculateRotateIndex(touchedIndex: Int, rotateBaseIndex: Int): Int {
         return when {
             touchedIndex < CIRCLE_NUM / 4 && CIRCLE_NUM * 3 / 4 < rotateBaseIndex ->
@@ -121,7 +134,7 @@ class AnimationController(val layout: FrameLayout) {
         }
     }
 
-    fun rotate(index: Int) {
+    private fun rotate(index: Int) {
         cocoLog("-rotate $index")
         isRotating = true
         rotateBaseIndex += index

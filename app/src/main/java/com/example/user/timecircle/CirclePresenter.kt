@@ -2,24 +2,26 @@ package com.example.user.timecircle
 
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.UNIT_ANGLE
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.sdk25.coroutines.onTouch
 import kotlin.math.atan2
 
-class CirclePresenter(private val layout: FrameLayout) {
+class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, private val viewModel: TimeCircleViewModel) {
     private val context = layout.context
 
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
-    private var animationController = AnimationController(layout)
+    private var animationController = AnimationController(layout, lifeCycleOwner, viewModel)
     private val circleViewsController = CircleViewsController(layout)
     private var touchMode: TouchMode = TouchMode.None
 
 
     init {
-        layout.onClick { animationController.zoomIn() }
+        layout.onClick { viewModel.isZoom.value = true }
         layout.onTouch { _, event ->
             onTimeCircleTouched(event)
         }
@@ -28,7 +30,7 @@ class CirclePresenter(private val layout: FrameLayout) {
     }
 
     private fun onTimeCircleTouched(motionEvent: MotionEvent): Boolean {
-        if (!animationController.isZoomed) {
+        if (viewModel.isZoom.value == false) {
             return false
         }
 
@@ -112,7 +114,7 @@ class CirclePresenter(private val layout: FrameLayout) {
     private fun square(mono: Float): Float = mono * mono
     private fun square(mono: Int): Float = (mono * mono).toFloat()
 
-    fun onActivityTouch(x: Float, y: Float, touchFinish: Boolean): Boolean {
+    fun onActivityTouch(x: Float, y: Float, activityComponent: ActivityComponent, touchFinish: Boolean): Boolean {
         // 줌상태 고려해주지 않기 때문에 2로 나누어준다.
         val activityX = (x - (animationController.zoomInX + centerX)) / 2
         val activityY = (y - (animationController.zoomInY + centerY)) / 2
@@ -121,18 +123,11 @@ class CirclePresenter(private val layout: FrameLayout) {
         if (isValid) {
             val touchedIndex = getCircleIndex(activityX, activityY, true)
             // 이미 다른 엑티비티가 있는 경우 return
-            return circleViewsController.changeColorForActivityDrop(ActivityColor.COLOR2, touchedIndex, touchFinish)
+            return circleViewsController.changeColorForActivityDrop(activityComponent, touchedIndex, touchFinish)
         } else {
             circleViewsController.removeColorForActivityDrop()
         }
         return isValid
-    }
-
-    fun zoomOut() {
-        if (animationController.isZoomed) {
-            animationController.zoomOut()
-            animationController.initValues()
-        }
     }
 
     private fun findIsInCircle(x: Float, y: Float): Boolean {

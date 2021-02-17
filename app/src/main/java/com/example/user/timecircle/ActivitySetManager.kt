@@ -1,16 +1,15 @@
 package com.example.user.timecircle
 
 import com.example.user.timecircle.common.CIRCLE_NUM
-import com.example.user.timecircle.common.cocoLog
 
 class ActivitySetManager {
     private val activitySetList = arrayListOf<ActivitySet>()
     private var lastAdjustingIndex: Int? = null
 
-    fun makeActivitySet(index: Int): ActivitySet {
+    fun makeActivitySet(index: Int, component: ActivityComponent): ActivitySet {
         val newActivityFromIndex = if (isActivitySetExist(index - 1)) index else index - 1
         val newActivityToIndex = if (isActivitySetExist(index + 1)) index else index + 1
-        return ActivitySet(newActivityFromIndex, newActivityToIndex, ActivityColor.COLOR1)
+        return ActivitySet(newActivityFromIndex, newActivityToIndex, component)
     }
 
     fun isActivitySetExist(index: Int): Boolean {
@@ -45,7 +44,7 @@ class ActivitySetManager {
             activitySetList.add(activitySet)
     }
 
-    fun adjustAvailableIndex(touchedIndex: Int, adjustActivity: TouchMode.AdjustActivity, result: (fromIndex: Int, toIndex: Int, color: ActivityColor) -> Unit) {
+    fun adjustAvailableIndex(touchedIndex: Int, adjustActivity: TouchMode.AdjustActivity, result: (fromIndex: Int, toIndex: Int, component: ActivityComponent) -> Unit) {
         val activitySet = activitySetList[adjustActivity.activitySetIndex]
         val prevToIndex = activitySetList.elementAtOrNull(adjustActivity.activitySetIndex - 1)?.toIndex
                 ?: 0
@@ -76,15 +75,15 @@ class ActivitySetManager {
                     }
                     validTouchedIndex < activitySet.fromIndex && (lastAdjustingIndex
                             ?: -1) > activitySet.fromIndex -> {
-                        result(validTouchedIndex, activitySet.fromIndex, activitySet.color)
+                        result(validTouchedIndex, activitySet.fromIndex, activitySet.component)
                         result(activitySet.fromIndex + 1, lastAdjustingIndex
-                                ?: return, ActivityColor.COLOR4)
+                                ?: return, ActivityComponent.ComponentTransparent)
                     }
                     validTouchedIndex > activitySet.fromIndex && (lastAdjustingIndex
                             ?: CIRCLE_NUM) < activitySet.fromIndex -> {
-                        result(activitySet.fromIndex, validTouchedIndex, activitySet.color)
+                        result(activitySet.fromIndex, validTouchedIndex, activitySet.component)
                         result(lastAdjustingIndex
-                                ?: return, activitySet.fromIndex - 1, ActivityColor.COLOR4)
+                                ?: return, activitySet.fromIndex - 1, ActivityComponent.ComponentTransparent)
                     }
                     else -> return
                 }
@@ -93,22 +92,22 @@ class ActivitySetManager {
         }
     }
 
-    private fun adjustOnClockwise(touchedIndex: Int, activitySet: ActivitySet, result: (fromIndex: Int, toIndex: Int, color: ActivityColor) -> Unit) {
+    private fun adjustOnClockwise(touchedIndex: Int, activitySet: ActivitySet, result: (fromIndex: Int, toIndex: Int, component: ActivityComponent) -> Unit) {
         (lastAdjustingIndex ?: activitySet.toIndex).let {
             if (touchedIndex > it) {
-                result(it + 1, touchedIndex, activitySet.color)
+                result(it + 1, touchedIndex, activitySet.component)
             } else if (touchedIndex < it) {
-                result(touchedIndex + 1, it, ActivityColor.COLOR4)
+                result(touchedIndex + 1, it, ActivityComponent.ComponentTransparent)
             }
         }
     }
 
-    private fun adjustOnAntiClockwise(touchedIndex: Int, activitySet: ActivitySet, result: (fromIndex: Int, toIndex: Int, color: ActivityColor) -> Unit) {
+    private fun adjustOnAntiClockwise(touchedIndex: Int, activitySet: ActivitySet, result: (fromIndex: Int, toIndex: Int, component: ActivityComponent) -> Unit) {
         (lastAdjustingIndex ?: activitySet.fromIndex).let {
             if (touchedIndex < it) {
-                result(touchedIndex, it - 1, activitySet.color)
+                result(touchedIndex, it - 1, activitySet.component)
             } else if (touchedIndex > it) {
-                result(it, touchedIndex - 1, ActivityColor.COLOR4)
+                result(it, touchedIndex - 1, ActivityComponent.ComponentTransparent)
             }
         }
     }
@@ -131,4 +130,4 @@ class ActivitySetManager {
     }
 }
 
-class ActivitySet(var fromIndex: Int, var toIndex: Int, val color: ActivityColor)
+class ActivitySet(var fromIndex: Int, var toIndex: Int, val component: ActivityComponent)
