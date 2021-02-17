@@ -17,6 +17,7 @@ private const val ROTATE_BASE_LEFT_UNIT = 3
 private const val INIT_ROTATION_ANGLE = 0.0f
 
 class AnimationController(private val layout: FrameLayout, lifecycleOwner: LifecycleOwner, private val viewModel: TimeCircleViewModel) {
+    private var tempRotateAngle: Float = 0f
     private var originX = 0f
     var rotateAngle = INIT_ROTATION_ANGLE
     private var rotateBaseIndex = CIRCLE_NUM / 4
@@ -61,7 +62,7 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
     }
 
     // rotateBaseIndex 와 몇 칸 떨어져 있는지 계산
-    private fun calculateRotateIndex(touchedIndex: Int, rotateBaseIndex: Int): Int {
+    fun calculateRotateIndex(touchedIndex: Int, rotateBaseIndex: Int): Int {
         return when {
             touchedIndex < CIRCLE_NUM / 4 && CIRCLE_NUM * 3 / 4 < rotateBaseIndex ->
                 if (CIRCLE_NUM + touchedIndex - rotateBaseIndex > ROTATE_BASE_LEFT_UNIT) {
@@ -157,9 +158,26 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
         }
     }
 
+    fun rotate(degree: Float) {
+        if (isRotating) return
+
+        isRotating = true
+        layout.animate().rotation((rotateAngle - degree)).setDuration(50).start()
+        tempRotateAngle = degree
+        rotateCoroutine = CoroutineScope(Dispatchers.Default).launch {
+            delay(50)
+            isRotating = false
+        }
+    }
+
     fun initActivityTouchValues() {
         antiClockwiseRotating = false
         clockwiseRotating = false
         isRotating = false
+    }
+
+    fun rotatingDone() {
+        rotateAngle -= tempRotateAngle
+        tempRotateAngle = 0f
     }
 }

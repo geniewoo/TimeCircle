@@ -2,7 +2,6 @@ package com.example.user.timecircle
 
 import android.view.MotionEvent
 import android.widget.FrameLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.UNIT_ANGLE
 import org.jetbrains.anko.dimen
@@ -15,6 +14,7 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
 
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
+    private var downTouchedRotatePos = Pair(0f, 0f)
     private var animationController = AnimationController(layout, lifeCycleOwner, viewModel)
     private val circleViewsController = CircleViewsController(layout)
     private var touchMode: TouchMode = TouchMode.None
@@ -41,7 +41,10 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 when (touchMode) {
                     is TouchMode.AdjustActivity -> {
-                       circleViewsController.adjustActivityDone(touchMode as TouchMode.AdjustActivity)
+                        circleViewsController.adjustActivityDone(touchMode as TouchMode.AdjustActivity)
+                    }
+                    is TouchMode.Rotating -> {
+                        animationController.rotatingDone()
                     }
                 }
                 touchMode = TouchMode.None
@@ -50,18 +53,22 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
             }
             MotionEvent.ACTION_DOWN -> {
                 touchMode = findTouchMode(x, y)
+                when (touchMode) {
+                    is TouchMode.Rotating -> downTouchedRotatePos = Pair(x, y)
+                }
                 return touchMode != TouchMode.None
             }
             MotionEvent.ACTION_MOVE -> {
                 when (touchMode) {
                     is TouchMode.Rotating -> {
-                        changeColorAndRotate(x, y)
+                        rotate(x, y)
                     }
                     is TouchMode.AdjustActivity -> {
                         val touchedIndex = getCircleIndex(x, y)
                         (touchMode as? TouchMode.AdjustActivity)?.let {
                             circleViewsController.adjustActivity(touchedIndex, it)
                         }
+                        changeColorAndRotate(x, y)
                     }
                     else -> return false
                 }
@@ -84,17 +91,28 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
         val touchedIndex = getCircleIndex(x, y)
 
         animationController.computeAndRotateState(touchedIndex)
+    }
 
-//        Log.i("coco", "rotateBaseIndex $rotateBaseIndex touchedIndex $touchedIndex")
-//        var rotateIndex = calculateRotateIndex(touchedIndex)
+    private fun rotate(x: Float, y: Float) {
+        val x1 = (x - (animationController.zoomInX + centerX)) / 2
+        val y1 = (y - (animationController.zoomInY + centerY)) / 2
+
+        val x2 = (downTouchedRotatePos.first - (animationController.zoomInX + centerX)) / 2
+        val y2 = (downTouchedRotatePos.second - (animationController.zoomInY + centerY)) / 2
+
+//        val degree1 = atan2(x1.toDouble(), y1.toDouble())
+//        val degree2 = atan2(x2.toDouble(), y2.toDouble())
+
+        val degree1 = (atan2(x, -y) * (180 / Math.PI) + 720) % 360
+        val degree2 = (atan2(downTouchedRotatePos.first, -downTouchedRotatePos.second) * (180 / Math.PI) + 720) % 360
+        animationController.rotate((degree2 - degree1).toFloat())
+//        var rotateIndex = animationController.calculateRotateIndex(touchedIndex)
 //        //회전 시킬 일 없으면 return
 //        if (rotateIndex == 0) return
 //
-//        Log.i("coco", "rotateIndex $rotateIndex")
 //        rotateIndex = rotateIndex.coerceIn(-MAX_ROTATE_INDEX, MAX_ROTATE_INDEX)
 //
 //        rotateBaseIndex += rotateIndex
-//        Log.i("coco", "coerceIn $rotateIndex")
 //        if (rotateBaseIndex > CIRCLE_NUM - 1) rotateBaseIndex -= CIRCLE_NUM
 //        else if (rotateBaseIndex < 0) rotateBaseIndex += CIRCLE_NUM
 //
