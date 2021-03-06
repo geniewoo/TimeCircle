@@ -4,10 +4,12 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.UNIT_ANGLE
+import com.example.user.timecircle.common.cocoLog
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.sdk25.coroutines.onTouch
 import kotlin.math.atan2
+import kotlin.text.Typography.degree
 
 class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, private val viewModel: TimeCircleViewModel) {
     private val context = layout.context
@@ -105,7 +107,11 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
 
         val degree1 = (atan2(x, -y) * (180 / Math.PI) + 720) % 360
         val degree2 = (atan2(downTouchedRotatePos.first, -downTouchedRotatePos.second) * (180 / Math.PI) + 720) % 360
-        animationController.rotate((degree2 - degree1).toFloat())
+        //fixme 0-> 360 혹은 360-> 0 될 수 있어서 조정해준다. 더 좋은 방법있으면 수정바람
+        val degree = (degree2 - degree1).let { if (it < -180) it + 360 else if (it > 180) it - 360 else it }
+
+        cocoLog("degree : " + (degree) + "x : $x y : $y", 22)
+        animationController.rotate((degree).toFloat())
 //        var rotateIndex = animationController.calculateRotateIndex(touchedIndex)
 //        //회전 시킬 일 없으면 return
 //        if (rotateIndex == 0) return

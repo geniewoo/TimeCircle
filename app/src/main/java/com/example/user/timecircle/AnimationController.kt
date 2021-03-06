@@ -3,6 +3,7 @@ package com.example.user.timecircle
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.CIRCLE_NUM
+import com.example.user.timecircle.common.CommonUtil.convertToCircleIndex
 import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
 import kotlinx.coroutines.*
@@ -138,7 +139,7 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
     private fun rotate(index: Int) {
         cocoLog("-rotate $index")
         isRotating = true
-        rotateBaseIndex += index
+        rotateBaseIndex = (index + rotateBaseIndex).convertToCircleIndex()
 
 //        val rotate = RotateAnimation(rotateAngle, rotateAngle + UNIT_ANGLE * - index, Animation.RELATIVE_TO_PARENT, 0.5f, Animation.RELATIVE_TO_PARENT, 0.5f)
 //        rotate.duration = 50
@@ -178,6 +179,7 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
 
     fun rotatingDone() {
         rotateAngle -= tempRotateAngle
+        rotateBaseIndex = ((-rotateAngle / UNIT_ANGLE).toInt() % CIRCLE_NUM + CIRCLE_NUM / 4).convertToCircleIndex()
         tempRotateAngle = 0f
     }
 }
