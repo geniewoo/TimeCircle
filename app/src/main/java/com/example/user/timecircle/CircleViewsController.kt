@@ -22,13 +22,13 @@ class CircleViewsController(layout: FrameLayout) {
     }
 
     private fun changeColor(component: ActivityComponent, index: Int) {
-        index.convertToCircleIndex().takeIf { !activitySetManager.isActivitySetExist(it) }?.let {
+        index.convertToCircleIndex().takeIf { activitySetManager.findActivitySet(it) == null }?.let {
             circleViews[it].changeColor(component.colorRes)
         }
     }
 
     fun changeColorForActivityDrop(component: ActivityComponent, index: Int, dropConfirm: Boolean): Boolean {
-        if (activitySetManager.isActivitySetExist(index)) {
+        if (activitySetManager.findActivitySet(index) != null) {
             removeColorForActivityDrop()
             return false
         }
@@ -68,7 +68,7 @@ class CircleViewsController(layout: FrameLayout) {
         }
     }
 
-    fun returnIndexEdgeOfActivitySet(index: Int): TouchMode.AdjustActivity? = activitySetManager.returnIndexEdgeOfActivitySet(index)
+    fun returnActivityUnconfirmedMode(index: Int): TouchMode? = activitySetManager.returnActivityUnconfirmedMode(index)
 
     fun adjustActivity(touchedIndex: Int, adjustActivity: TouchMode.AdjustActivity) {
         activitySetManager.adjustAvailableIndex(touchedIndex, adjustActivity) {

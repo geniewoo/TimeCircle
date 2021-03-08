@@ -7,31 +7,33 @@ class ActivitySetManager {
     private var lastAdjustingIndex: Int? = null
 
     fun makeActivitySet(index: Int, component: ActivityComponent): ActivitySet {
-        val newActivityFromIndex = if (isActivitySetExist(index - 1)) index else index - 1
-        val newActivityToIndex = if (isActivitySetExist(index + 1)) index else index + 1
+        val newActivityFromIndex = if (findActivitySet(index - 1) != null) index else index - 1
+        val newActivityToIndex = if (findActivitySet(index + 1) != null) index else index + 1
         return ActivitySet(newActivityFromIndex, newActivityToIndex, component)
     }
 
-    fun isActivitySetExist(index: Int): Boolean {
-        return activitySetList.any {
-            if (index < it.fromIndex) return@any false
+    fun findActivitySet(index: Int): ActivitySet? {
+        return activitySetList.find {
+            if (index < it.fromIndex) return@find false
             it.fromIndex <= index && index <= it.toIndex
         }
     }
 
-    fun returnIndexEdgeOfActivitySet(index: Int): TouchMode.AdjustActivity? {
+    fun returnActivityUnconfirmedMode(index: Int): TouchMode? {
         val setIndex = activitySetList.indexOfFirst {
             if (index < it.fromIndex) return@indexOfFirst false
             it.fromIndex == index || index == it.toIndex
         }
-        return if (0 <= setIndex) {
-            val adjustDirection = when {
-                activitySetList[setIndex].fromIndex != index -> AdjustDirection.CLOCKWISE
-                activitySetList[setIndex].toIndex != index -> AdjustDirection.ANTICLOCKWISE
-                else -> AdjustDirection.BOTH
-            }
-            TouchMode.AdjustActivity(setIndex, adjustDirection)
-        } else null
+        return findActivitySet(index)?.let {
+            val adjustDirection = if (it.fromIndex == index || index == it.toIndex) {
+                when {
+                    activitySetList[setIndex].fromIndex != index -> AdjustDirection.CLOCKWISE
+                    activitySetList[setIndex].toIndex != index -> AdjustDirection.ANTICLOCKWISE
+                    else -> AdjustDirection.BOTH
+                }
+            } else null
+            TouchMode.Unconfirmed(setIndex, adjustDirection)
+        }
     }
 
     fun insertActivitySet(activitySet: ActivitySet) {

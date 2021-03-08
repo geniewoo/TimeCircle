@@ -8,6 +8,7 @@ import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dimen
+import kotlin.math.atan2
 
 private const val DURATION: Long = 500
 private const val SCALE1 = 1.0f
@@ -26,6 +27,7 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
     private var antiClockwiseRotating = false
     private var clockwiseRotating = false
     private var isRotating = false
+    var downTouchedRotatePos = Pair(0f, 0f)
 
     val zoomInX by lazy { layout.dimen(R.dimen.zoom_in_x) }
     val zoomInY by lazy { layout.dimen(R.dimen.zoom_in_y) }
@@ -141,13 +143,7 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
         isRotating = true
         rotateBaseIndex = (index + rotateBaseIndex).convertToCircleIndex()
 
-//        val rotate = RotateAnimation(rotateAngle, rotateAngle + UNIT_ANGLE * - index, Animation.RELATIVE_TO_PARENT, 0.5f, Animation.RELATIVE_TO_PARENT, 0.5f)
-//        rotate.duration = 50
-//        rotate.fillAfter
-//        rotate.interpolator = LinearInterpolator()
         rotateAngle -= UNIT_ANGLE * index
-//        layout.startAnimation(rotate)
-//        layout.animate().rotationBy(-index * UNIT_ANGLE).setDuration(50).start()
 
         layout.animate().rotation(rotateAngle).setDuration(50).start()
         rotateCoroutine = CoroutineScope(Dispatchers.Default).launch {
@@ -156,18 +152,6 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
                 if (isRotating) rotate(index)
                 cocoLog("delay -rotate $index")
             }
-        }
-    }
-
-    fun rotate(degree: Float) {
-        if (isRotating) return
-
-        isRotating = true
-        layout.animate().rotation((rotateAngle - degree)).setDuration(50).start()
-        tempRotateAngle = degree
-        rotateCoroutine = CoroutineScope(Dispatchers.Default).launch {
-            delay(50)
-            isRotating = false
         }
     }
 
@@ -181,5 +165,22 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
         rotateAngle -= tempRotateAngle
         rotateBaseIndex = ((-rotateAngle / UNIT_ANGLE).toInt() % CIRCLE_NUM + CIRCLE_NUM / 4).convertToCircleIndex()
         tempRotateAngle = 0f
+    }
+
+    fun rotate(x: Float, y: Float) {
+        if (isRotating) return
+
+        val degree1 = (atan2(x, -y) * (180 / Math.PI) + 720) % 360
+        val degree2 = (atan2(downTouchedRotatePos.first, -downTouchedRotatePos.second) * (180 / Math.PI) + 720) % 360
+        //fixme 0-> 360 혹은 360-> 0 될 수 있어서 조정해준다. 더 좋은 방법있으면 수정바람
+        val degree = (degree2 - degree1).let { if (it < -180) it + 360 else if (it > 180) it - 360 else it }.toFloat()
+
+        isRotating = true
+        layout.animate().rotation((rotateAngle - degree)).setDuration(50).start()
+        tempRotateAngle = degree
+        rotateCoroutine = CoroutineScope(Dispatchers.Default).launch {
+            delay(50)
+            isRotating = false
+        }
     }
 }
