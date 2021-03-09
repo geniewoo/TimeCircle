@@ -25,12 +25,15 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
     private var touchMode: TouchMode = TouchMode.None
     private var unconfirmedModePos: Pair<Float, Float>? = null
     private var unConfirmDetermineDeffer: Deferred<Unit>? = null
-    private fun unconfirmedTimer() =
+    private fun unconfirmedTimer(x: Float, y: Float) =
             GlobalScope.launch {
                 unConfirmDetermineDeffer = async {
                     delay(1000)
                 }
                 unConfirmDetermineDeffer?.await()
+                (touchMode as? TouchMode.Unconfirmed)?.let {
+                    touchMode = TouchMode.MoveActivity(getCircleIndex(x, y, true), it.activitySet)
+                }
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "longClick", Toast.LENGTH_SHORT).show()
                 }
@@ -62,14 +65,33 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                     is TouchMode.Unconfirmed -> {
                         if (unConfirmDetermineDeffer?.isActive == true) {
                             Toast.makeText(context, "shortClick", Toast.LENGTH_SHORT).show()
+                            // todo shortclick dialog 추가
                         }
+                    }
+                    is TouchMode.MoveActivity -> {
+                        (touchMode as? TouchMode.MoveActivity)?.let {
+                            circleViewsController.removeColorForActivityEdit()
+                            circleViewsController.removeColorForActivityMove(it.activitySet)
+                            val touchedIndex = getCircleIndex(x, y)
+                            if (findIsInCircle(x, y)) {
+                                if (touchedIndex in it.activitySet.fromIndex..it.activitySet.toIndex) {
+                                    circleViewsController.recoverColorForActivityMoveCancel(it.activitySet)
+                                } else {
+                                    circleViewsController.removeActivityForMove(it.activitySet)
+                                    circleViewsController.changeColorForActivityEdit(it.activitySet.component, touchedIndex, true)
+                                }
+                            } else {
+                                circleViewsController.removeActivityForMove(it.activitySet)
+                            }
+                        }
+                        return true
                     }
                 }
                 unConfirmDetermineDeffer?.cancel()
                 touchMode = TouchMode.None
                 unconfirmedModePos = null
                 animationController.initActivityTouchValues()
-                return true
+                return false
             }
             MotionEvent.ACTION_DOWN -> {
                 touchMode = findTouchMode(x, y)
@@ -77,7 +99,7 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                     is TouchMode.Rotating -> animationController.downTouchedRotatePos = Pair(x, y)
                     is TouchMode.Unconfirmed -> {
                         unconfirmedModePos = Pair(x, y)
-                        unconfirmedTimer()
+                        unconfirmedTimer(x, y)
                     }
                 }
                 return touchMode != TouchMode.None
@@ -106,6 +128,23 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                         }
                         changeColorAndRotate(x, y)
                     }
+                    is TouchMode.MoveActivity -> {
+                        (touchMode as? TouchMode.MoveActivity)?.let {
+                            circleViewsController.changeColorForActivityMoveReady(it.activitySet)
+
+                            val touchedIndex = getCircleIndex(x, y)
+                            if (findIsInCircle(x, y)) {
+                                if (touchedIndex in it.activitySet.fromIndex..it.activitySet.toIndex) {
+                                    circleViewsController.removeColorForActivityEdit()
+                                } else {
+                                    circleViewsController.changeColorForActivityEdit(it.activitySet.component, touchedIndex, false)
+                                }
+                            } else {
+                                circleViewsController.removeColorForActivityEdit()
+                            }
+                            return true
+                        }
+                    }
                     else -> return false
                 }
             }
@@ -113,14 +152,11 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
         return false
     }
 
-    private fun findTouchMode(x: Float, y: Float): TouchMode {
-        val length = square(x) + square(y)
-        return if (length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)) {
+    private fun findTouchMode(x: Float, y: Float): TouchMode = if (findIsInCircle(x, y)) {
             val touchedIndex = getCircleIndex(x, y)
             circleViewsController.returnActivityUnconfirmedMode(touchedIndex)
                     ?: TouchMode.Rotating(touchedIndex)
         } else TouchMode.None
-    }
 
     private fun changeColorAndRotate(x: Float, y: Float) {
         // touchedIndex 현재 눌린 시간 인덱
@@ -146,15 +182,15 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
         if (isValid) {
             val touchedIndex = getCircleIndex(activityX, activityY, true)
             // 이미 다른 엑티비티가 있는 경우 return
-            return circleViewsController.changeColorForActivityDrop(activityComponent, touchedIndex, touchFinish)
+            return circleViewsController.changeColorForActivityEdit(activityComponent, touchedIndex, touchFinish)
         } else {
-            circleViewsController.removeColorForActivityDrop()
+            circleViewsController.removeColorForActivityEdit()
         }
         return isValid
     }
 
     private fun findIsInCircle(x: Float, y: Float): Boolean {
         val length = square(x) + square(y)
-        return length < square(context.dimen(R.dimen.time_circle_length) / 2) && length > square(context.dimen(R.dimen.time_image_length) / 2)
+        return length in square(context.dimen(R.dimen.time_image_length) / 2)..square(context.dimen(R.dimen.time_circle_length) / 2)
     }
 }

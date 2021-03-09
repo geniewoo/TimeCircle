@@ -9,5 +9,10 @@
 	<color name="red">#f00</color>
 	<color name="blue">#00f</color>
 	<color name="pink">#f0f</color>
+	<color name="green_tint">#afa</color>
+	<color name="yellow_tint">#ffa</color>
+	<color name="red_tint">#faa</color>
+	<color name="blue_tint">#aaf</color>
+	<color name="pink_tint">#faf</color>
 	<color name="transparent">#0000</color>
 </resources>

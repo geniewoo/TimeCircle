@@ -32,7 +32,7 @@ class ActivitySetManager {
                     else -> AdjustDirection.BOTH
                 }
             } else null
-            TouchMode.Unconfirmed(setIndex, adjustDirection)
+            TouchMode.Unconfirmed(setIndex, it, adjustDirection)
         }
     }
 
@@ -129,6 +129,10 @@ class ActivitySetManager {
         }
 
         lastAdjustingIndex = null
+    }
+
+    fun removeActivity(activitySet: ActivitySet) {
+        activitySetList.remove(activitySet)
     }
 }
 

@@ -27,9 +27,9 @@ class CircleViewsController(layout: FrameLayout) {
         }
     }
 
-    fun changeColorForActivityDrop(component: ActivityComponent, index: Int, dropConfirm: Boolean): Boolean {
+    fun changeColorForActivityEdit(component: ActivityComponent, index: Int, dropConfirm: Boolean): Boolean {
         if (activitySetManager.findActivitySet(index) != null) {
-            removeColorForActivityDrop()
+            removeColorForActivityEdit()
             return false
         }
         val tempActivitySet = activitySetManager.makeActivitySet(index, component)
@@ -49,9 +49,15 @@ class CircleViewsController(layout: FrameLayout) {
         activitySetManager.insertActivitySet(activitySet)
     }
 
-    fun removeColorForActivityDrop() {
+    fun removeColorForActivityEdit() {
         removeColorForDrop()
         lastDropActivitySet = null
+    }
+
+    fun removeActivityForMove(activitySet: ActivitySet) {
+        removeColorForDrop()
+        lastDropActivitySet = null
+        activitySetManager.removeActivity(activitySet)
     }
 
     private fun changeColorForDrop(component: ActivityComponent, activitySet: ActivitySet) {
@@ -82,14 +88,33 @@ class CircleViewsController(layout: FrameLayout) {
     fun adjustActivityDone(adjustActivity: TouchMode.AdjustActivity) {
         activitySetManager.adjustActivityDone(adjustActivity)
     }
+
+    fun changeColorForActivityMoveReady(activitySet: ActivitySet): Boolean {
+        for (i in activitySet.fromIndex..activitySet.toIndex) {
+            circleViews[i].changeColor(activitySet.component.tintColorRes)
+        }
+        return true
+    }
+
+    fun recoverColorForActivityMoveCancel(activitySet: ActivitySet) {
+        for (i in activitySet.fromIndex..activitySet.toIndex) {
+            circleViews[i].changeColor(activitySet.component.colorRes)
+        }
+    }
+
+    fun removeColorForActivityMove(activitySet: ActivitySet) {
+        for (i in activitySet.fromIndex..activitySet.toIndex) {
+            circleViews[i].changeColor(ActivityComponent.ComponentTransparent.colorRes)
+        }
+    }
 }
 
-enum class ActivityComponent(val colorRes: Int) {
-    Component1(R.color.yellow),
-    Component2(R.color.green),
-    Component3(R.color.red),
-    Component4(R.color.blue),
-    Component5(R.color.pink),
-    ComponentTransparent(R.color.transparent)
+enum class ActivityComponent(val colorRes: Int, val tintColorRes: Int) {
+    Component1(R.color.yellow, R.color.yellow_tint),
+    Component2(R.color.green, R.color.green_tint),
+    Component3(R.color.red, R.color.red_tint),
+    Component4(R.color.blue, R.color.blue_tint),
+    Component5(R.color.pink, R.color.pink_tint),
+    ComponentTransparent(R.color.transparent, R.color.transparent)
     ;
 }
