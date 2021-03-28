@@ -2,30 +2,32 @@ package com.example.user.timecircle
 
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.CommonUtil.dpToPx
 import com.example.user.timecircle.common.CommonUtil.square
+import com.example.user.timecircle.common.FirstTouchInterpreter
 import com.example.user.timecircle.common.UNIT_ANGLE
 import com.example.user.timecircle.common.cocoLog
+import kotlinx.android.synthetic.main.time_circle_fragment.view.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dimen
-import org.jetbrains.anko.sdk25.coroutines.onClick
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, private val viewModel: TimeCircleViewModel) {
+class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: ConstraintLayout, private val viewModel: TimeCircleViewModel) {
     private val context = layout.context
 
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
-    private val animationController = AnimationController(layout, lifeCycleOwner, viewModel)
-    private val circleViewsController = CircleViewsController(layout)
+    private val animationController = AnimationController(layout.time_circle_second_layer, lifeCycleOwner, viewModel)
+    private val circleViewsController = CircleViewsController(layout.time_circle_second_layer)
     private var touchMode: TouchMode = TouchMode.None
     private var unconfirmedModePos: Pair<Float, Float>? = null
     private var unConfirmDetermineDeffer: Deferred<Unit>? = null
+    private val touchInterpreter = FirstTouchInterpreter(viewModel, layout)
 
     private fun unconfirmedTimer(x: Float, y: Float) =
             GlobalScope.launch {
@@ -41,9 +43,7 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                 }
             }
 
-
     init {
-        layout.onClick { viewModel.isZoom.value = true }
         layout.setOnTouchListener { _, event ->
             onTimeCircleTouched(event)
             gestureDetector.onTouchEvent(event)

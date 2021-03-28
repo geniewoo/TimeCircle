@@ -16,7 +16,7 @@ class CircleViewsController(layout: FrameLayout) {
         for (i in 0 until CIRCLE_NUM) {
             val circleView = CircleView(layout.context)
             circleView.z = 1.0f
-            layout.time_circle_inner_frame_layout.addView(circleView)
+            layout.time_circle_third_layer.addView(circleView)
             circleViews.add(circleView)
         }
     }

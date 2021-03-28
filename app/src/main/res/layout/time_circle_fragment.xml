@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.example.user.timecircle.common.views.TouchPropagationLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/time_circle_root_layout"
+    android:id="@+id/time_circle_first_layer"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <FrameLayout
-        android:id="@+id/time_circle_frame_layout"
+        android:id="@+id/time_circle_second_layer"
         android:layout_width="@dimen/time_circle_length"
         android:layout_height="@dimen/time_circle_length"
         android:background="@color/transparent"
@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <FrameLayout
-            android:id="@+id/time_circle_inner_frame_layout"
+            android:id="@+id/time_circle_third_layer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
