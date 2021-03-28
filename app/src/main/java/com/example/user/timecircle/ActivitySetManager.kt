@@ -32,7 +32,7 @@ class ActivitySetManager {
                     else -> AdjustDirection.BOTH
                 }
             } else null
-            TouchMode.Unconfirmed(setIndex, it, adjustDirection)
+            TouchMode.UnconfirmedRotating(setIndex, it, adjustDirection)
         }
     }
 

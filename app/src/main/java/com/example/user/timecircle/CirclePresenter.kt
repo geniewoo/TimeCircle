@@ -1,5 +1,6 @@
 package com.example.user.timecircle
 
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -7,10 +8,10 @@ import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.CommonUtil.dpToPx
 import com.example.user.timecircle.common.CommonUtil.square
 import com.example.user.timecircle.common.UNIT_ANGLE
+import com.example.user.timecircle.common.cocoLog
 import kotlinx.coroutines.*
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.sdk25.coroutines.onClick
-import org.jetbrains.anko.sdk25.coroutines.onTouch
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -20,18 +21,19 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
 
     private val centerX by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
     private val centerY by lazy { context.dimen(R.dimen.time_circle_length) / 2 }
-    private var animationController = AnimationController(layout, lifeCycleOwner, viewModel)
+    private val animationController = AnimationController(layout, lifeCycleOwner, viewModel)
     private val circleViewsController = CircleViewsController(layout)
     private var touchMode: TouchMode = TouchMode.None
     private var unconfirmedModePos: Pair<Float, Float>? = null
     private var unConfirmDetermineDeffer: Deferred<Unit>? = null
+
     private fun unconfirmedTimer(x: Float, y: Float) =
             GlobalScope.launch {
                 unConfirmDetermineDeffer = async {
                     delay(1000)
                 }
                 unConfirmDetermineDeffer?.await()
-                (touchMode as? TouchMode.Unconfirmed)?.let {
+                (touchMode as? TouchMode.UnconfirmedRotating)?.let {
                     touchMode = TouchMode.MoveActivity(getCircleIndex(x, y, true), it.activitySet)
                 }
                 withContext(Dispatchers.Main) {
@@ -42,12 +44,19 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
 
     init {
         layout.onClick { viewModel.isZoom.value = true }
-        layout.onTouch { _, event ->
+        layout.setOnTouchListener { _, event ->
             onTimeCircleTouched(event)
+            gestureDetector.onTouchEvent(event)
         }
 
         animationController.initValues()
     }
+
+    private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            return true
+        }
+    })
 
     private fun onTimeCircleTouched(motionEvent: MotionEvent): Boolean {
         if (viewModel.isZoom.value == false) {
@@ -62,7 +71,8 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                 when (touchMode) {
                     is TouchMode.AdjustActivity -> circleViewsController.adjustActivityDone(touchMode as TouchMode.AdjustActivity)
                     is TouchMode.Rotating -> animationController.rotatingDone()
-                    is TouchMode.Unconfirmed -> {
+                    is TouchMode.UnconfirmedRotating -> {
+                        animationController.rotatingDone()
                         if (unConfirmDetermineDeffer?.isActive == true) {
                             Toast.makeText(context, "shortClick", Toast.LENGTH_SHORT).show()
                             // todo shortclick dialog 추가
@@ -97,7 +107,8 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                 touchMode = findTouchMode(x, y)
                 when (touchMode) {
                     is TouchMode.Rotating -> animationController.downTouchedRotatePos = Pair(x, y)
-                    is TouchMode.Unconfirmed -> {
+                    is TouchMode.UnconfirmedRotating -> {
+                        animationController.downTouchedRotatePos = Pair(x, y)
                         unconfirmedModePos = Pair(x, y)
                         unconfirmedTimer(x, y)
                     }
@@ -105,7 +116,8 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                 return touchMode != TouchMode.None
             }
             MotionEvent.ACTION_MOVE -> {
-                (touchMode as? TouchMode.Unconfirmed)?.let { unconfirmedMode ->
+                cocoLog("coco77 move")
+                (touchMode as? TouchMode.UnconfirmedRotating)?.let { unconfirmedMode ->
                     unconfirmedModePos?.let {
                         val distance = sqrt((it.first - x).pow(2) + (it.second - y).pow(2))
                         if (distance > 5f.dpToPx(context) && unconfirmedMode.adjustDirection != null) {
@@ -113,14 +125,13 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
                             touchMode = TouchMode.AdjustActivity(unconfirmedMode)
                         } else if (distance > 5f.dpToPx(context)) {
                             unConfirmDetermineDeffer?.cancel()
-                            touchMode = TouchMode.None
+                            touchMode = TouchMode.Rotating(getCircleIndex(it.first, it.second))
                         }
                     }
                 }
                 when (touchMode) {
-                    is TouchMode.Rotating -> {
-                        animationController.rotate(x, y)
-                    }
+                    is TouchMode.Rotating -> animationController.rotate(x, y)
+                    is TouchMode.UnconfirmedRotating -> animationController.rotate(x, y)
                     is TouchMode.AdjustActivity -> {
                         val touchedIndex = getCircleIndex(x, y)
                         (touchMode as? TouchMode.AdjustActivity)?.let {
@@ -153,10 +164,10 @@ class CirclePresenter(lifeCycleOwner: LifecycleOwner, layout: FrameLayout, priva
     }
 
     private fun findTouchMode(x: Float, y: Float): TouchMode = if (findIsInCircle(x, y)) {
-            val touchedIndex = getCircleIndex(x, y)
-            circleViewsController.returnActivityUnconfirmedMode(touchedIndex)
-                    ?: TouchMode.Rotating(touchedIndex)
-        } else TouchMode.None
+        val touchedIndex = getCircleIndex(x, y)
+        circleViewsController.returnActivityUnconfirmedMode(touchedIndex)
+                ?: TouchMode.Rotating(touchedIndex)
+    } else TouchMode.None
 
     private fun changeColorAndRotate(x: Float, y: Float) {
         // touchedIndex 현재 눌린 시간 인덱

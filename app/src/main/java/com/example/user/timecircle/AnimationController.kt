@@ -183,4 +183,8 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
             isRotating = false
         }
     }
+
+    fun rotateByFling(velocityX: Float, velocityY: Float, vectorX: Int, vectorY: Int) {
+
+    }
 }
