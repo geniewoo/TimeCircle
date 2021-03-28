@@ -28,14 +28,5 @@ class TimeCircleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         circlePresenter = CirclePresenter(viewLifecycleOwner, time_circle_first_layer, viewModel)
-        activity_list.children.forEach {
-            (it as? DragActivityView)?.onTouch = { x, y, activityComponent, touchFinish ->
-                circlePresenter.onActivityTouch(x, y, activityComponent, touchFinish)
-            }
-        }
-
-        viewModel.isZoom.observe(viewLifecycleOwner) {
-            activity_list.isVisible = it
-        }
     }
 }

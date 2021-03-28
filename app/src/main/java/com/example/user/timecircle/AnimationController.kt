@@ -1,7 +1,6 @@
 package com.example.user.timecircle
 
 import android.widget.FrameLayout
-import androidx.lifecycle.LifecycleOwner
 import com.example.user.timecircle.common.CIRCLE_NUM
 import com.example.user.timecircle.common.CommonUtil.convertToCircleIndex
 import com.example.user.timecircle.common.UNIT_ANGLE
@@ -12,13 +11,13 @@ import kotlin.math.atan2
 
 private const val DURATION: Long = 500
 private const val SCALE1 = 1.0f
-private const val SCALE2 = 2.0f
+const val SCALE2 = 2.0f
 private const val ZOOM_OUT_Y = 0.0f
 private const val ROTATE_BASE_RIGHT_UNIT = -4
 private const val ROTATE_BASE_LEFT_UNIT = 3
 private const val INIT_ROTATION_ANGLE = 0.0f
 
-class AnimationController(private val layout: FrameLayout, lifecycleOwner: LifecycleOwner, private val viewModel: TimeCircleViewModel) {
+class AnimationController(private val layout: FrameLayout, val animationChangeListener: AnimationChangeListener) {
     private var tempRotateAngle: Float = 0f
     private var originX = 0f
     var rotateAngle = INIT_ROTATION_ANGLE
@@ -29,21 +28,22 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
     private var isRotating = false
     var downTouchedRotatePos = Pair(0f, 0f)
 
-    val zoomInX by lazy { layout.dimen(R.dimen.zoom_in_x) }
-    val zoomInY by lazy { layout.dimen(R.dimen.zoom_in_y) }
+    val zoomInX by lazy {
+        layout.dimen(R.dimen.zoom_in_x)
+    }
+    val zoomInY by lazy {
+        layout.dimen(R.dimen.zoom_in_y)
+    }
 
     var isZoomed = false
+        set(value) {
+            if (value) zoomIn() else zoomOut()
+            animationChangeListener.onZoom(value)
+            field = value
+        }
 
     init {
-        viewModel.isZoom.observe(lifecycleOwner) {
-            isZoomed = if (it) {
-                zoomIn()
-                true
-            } else {
-                zoomOut()
-                false
-            }
-        }
+        initValues()
     }
 
     fun initValues() {
@@ -186,5 +186,9 @@ class AnimationController(private val layout: FrameLayout, lifecycleOwner: Lifec
 
     fun rotateByFling(velocityX: Float, velocityY: Float, vectorX: Int, vectorY: Int) {
 
+    }
+
+    interface AnimationChangeListener {
+        fun onZoom(isZoom: Boolean)
     }
 }
